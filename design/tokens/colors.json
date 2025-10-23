@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "OSS brand color tokens (Dark-only, Tatami texture, Red/Blue accents)",
+  "palette": {
+    "grayscale": {
+      "black": "#0A0A0A",
+      "gray900": "#1A1A1A",
+      "gray800": "#2A2A2A",
+      "gray700": "#3F3F3F",
+      "gray600": "#5F5F5F",
+      "gray500": "#7F7F7F",
+      "gray400": "#9F9F9F",
+      "gray300": "#BFBFBF",
+      "gray200": "#DFDFDF",
+      "gray100": "#F0F0F0",
+      "white": "#FFFFFF"
+    },
+    "accent": {
+      "red": {
+        "base": "#D32F2F",
+        "light": "#F44336",
+        "dark": "#B71C1C"
+      },
+      "blue": {
+        "base": "#1976D2",
+        "light": "#2196F3",
+        "dark": "#0D47A1"
+      }
+    },
+    "tatami": {
+      "beige": "#E8DCC4",
+      "sand": "#D4C5A9",
+      "brown": "#8B7355"
+    }
+  },
+  "semantic": {
+    "background": {
+      "primary": "#0A0A0A",
+      "secondary": "#1A1A1A",
+      "tertiary": "#2A2A2A",
+      "surface": "#1A1A1A",
+      "overlay": "#0A0A0A99"
+    },
+    "text": {
+      "primary": "#FFFFFF",
+      "secondary": "#BFBFBF",
+      "muted": "#7F7F7F",
+      "inverse": "#0A0A0A"
+    },
+    "brand": {
+      "primary": "#D32F2F",
+      "secondary": "#1976D2",
+      "tatami": "#D4C5A9"
+    },
+    "state": {
+      "success": "#4CAF50",
+      "warning": "#FFC107",
+      "error": "#D32F2F",
+      "info": "#2196F3",
+      "locked": "#7F7F7F"
+    },
+    "interactive": {
+      "primary": "#D32F2F",
+      "primaryHover": "#F44336",
+      "primaryActive": "#B71C1C",
+      "secondary": "#1976D2",
+      "secondaryHover": "#2196F3",
+      "secondaryActive": "#0D47A1",
+      "disabled": "#3F3F3F"
+    },
+    "border": {
+      "default": "#3F3F3F",
+      "focus": "#D32F2F",
+      "subtle": "#2A2A2A"
+    }
+  }
+}

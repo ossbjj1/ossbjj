@@ -1,0 +1,46 @@
+language: en-US
+reviews:
+  profile: assertive
+  high_level_summary: true
+  auto_review:
+    enabled: true
+    drafts: false
+  request_changes_workflow: true
+  
+  # OSS-specific: enforce WARP.md governance
+  path_filters:
+    - "!**/*.lock"
+    - "!**/.DS_Store"
+    - "!**/supabase/.temp/**"
+    - "!**/.dart_tool/**"
+    - "!**/build/**"
+
+commit_status:
+  enabled: true
+
+# OSS-specific checks
+checks:
+  # Enforce WARP.md checkpoints in PR descriptions
+  - name: "WARP.md Checkpoints"
+    description: "PR must include Role, BMAD, and Prove sections"
+    severity: error
+  
+  # No secrets in code
+  - name: "Secrets Detection"
+    description: "Detected potential secret. Use environment variables."
+    pattern: "(api_key|apiKey|secret|password|token)\\s*=\\s*['\"](?!{{).*['\"]" 
+    severity: error
+  
+  # Server-side gating enforcement
+  - name: "Client-Side Entitlement Check"
+    description: "Entitlement checks must be server-side (Edge Functions)"
+    pattern: "(entitlement|premium).*==|if.*entitlement"
+    files: "app/**/*.dart"
+    severity: warning
+  
+  # DSGVO compliance
+  - name: "Telemetry Consent Gate"
+    description: "Ensure telemetry is gated by consent_analytics flag"
+    pattern: "(PostHog|Sentry|analytics)\\.(init|capture|addBreadcrumb)"
+    files: "app/**/*.dart"
+    severity: warning
