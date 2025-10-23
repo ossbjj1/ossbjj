@@ -18,7 +18,8 @@ function jsonResponse(
       "Content-Type": "application/json",
       "Cache-Control": "no-store",
       "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization, Accept, Origin",
+      "Access-Control-Allow-Headers":
+        "Content-Type, Authorization, Accept, Origin",
       "Access-Control-Allow-Methods": "HEAD, GET, OPTIONS",
     },
   });
@@ -31,7 +32,8 @@ serve((req) => {
       headers: {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "HEAD, GET, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization, Accept, Origin",
+        "Access-Control-Allow-Headers":
+          "Content-Type, Authorization, Accept, Origin",
       },
     });
   }
