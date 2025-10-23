@@ -6,6 +6,8 @@
 
 # Supabase
 supabase/.temp/
+server/supabase/supabase/  # CLI duplicate temp files
+supabase/functions/.eslintignore
 
 # Flutter/Dart
 .dart_tool/
