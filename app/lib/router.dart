@@ -81,7 +81,7 @@ const Set<String> _hideBottomNavRoutes = {
 };
 
 Widget? _buildBottomNav(BuildContext context) {
-  final matchedLocation = GoRouter.of(context).location;
+  final matchedLocation = GoRouterState.of(context).matchedLocation;
   // Hide bottom nav on detail/modal routes using exact/prefix matching
   if (_hideBottomNavRoutes.any((route) => matchedLocation.startsWith(route))) {
     return null;

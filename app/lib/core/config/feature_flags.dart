@@ -17,13 +17,13 @@ class FeatureFlags {
 
   /// Allows runtime systems to override paywall availability.
   static void setPaywallEnabledOverride(bool? value) {
-    _payallEnabledOverride = value;
+    _paywallEnabledOverride = value;
   }
 
   /// Resets runtime overrides so tests remain isolated between runs.
   static void resetOverrides() {
     _gatingEnabledOverride = null;
-    _payallEnabledOverride = null;
+    _paywallEnabledOverride = null;
   }
 
   /// Server-side gating flag: defaults to `true` but can be toggled via
@@ -41,7 +41,7 @@ class FeatureFlags {
 
   /// Paywall flag: defaults to `false` (not yet implemented).
   static bool get paywallEnabled {
-    final override = _payallEnabledOverride;
+    final override = _paywallEnabledOverride;
     if (override != null) {
       return override;
     }
