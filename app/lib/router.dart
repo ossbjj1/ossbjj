@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 /// Main router configuration for OSS app.
-/// 
+///
 /// Routes:
 /// - `/` → HomeScreen (S1)
 /// - `/learn` → LearnScreen (S1)
@@ -88,7 +88,8 @@ Widget? _buildBottomNav(BuildContext context) {
         _NavItem(label: 'Home', route: '/', currentLocation: location),
         _NavItem(label: 'Learn', route: '/learn', currentLocation: location),
         _NavItem(label: 'Stats', route: '/stats', currentLocation: location),
-        _NavItem(label: 'Settings', route: '/settings', currentLocation: location),
+        _NavItem(
+            label: 'Settings', route: '/settings', currentLocation: location),
       ],
     ),
   );
@@ -135,32 +136,32 @@ class _HomeScreenStub extends StatelessWidget {
   const _HomeScreenStub();
   @override
   Widget build(BuildContext context) => const Scaffold(
-    body: Center(child: Text('Home (Sprint 1)')),
-  );
+        body: Center(child: Text('Home (Sprint 1)')),
+      );
 }
 
 class _LearnScreenStub extends StatelessWidget {
   const _LearnScreenStub();
   @override
   Widget build(BuildContext context) => const Scaffold(
-    body: Center(child: Text('Learn (Sprint 1)')),
-  );
+        body: Center(child: Text('Learn (Sprint 1)')),
+      );
 }
 
 class _StatsScreenStub extends StatelessWidget {
   const _StatsScreenStub();
   @override
   Widget build(BuildContext context) => const Scaffold(
-    body: Center(child: Text('Stats (Sprint 1)')),
-  );
+        body: Center(child: Text('Stats (Sprint 1)')),
+      );
 }
 
 class _SettingsScreenStub extends StatelessWidget {
   const _SettingsScreenStub();
   @override
   Widget build(BuildContext context) => const Scaffold(
-    body: Center(child: Text('Settings (Sprint 1)')),
-  );
+        body: Center(child: Text('Settings (Sprint 1)')),
+      );
 }
 
 // Sprint 5+ Stubs
@@ -168,16 +169,16 @@ class _TechniqueScreenStub extends StatelessWidget {
   const _TechniqueScreenStub();
   @override
   Widget build(BuildContext context) => const Scaffold(
-    body: Center(child: Text('Technique (Sprint 5)')),
-  );
+        body: Center(child: Text('Technique (Sprint 5)')),
+      );
 }
 
 class _StepPlayerScreenStub extends StatelessWidget {
   const _StepPlayerScreenStub();
   @override
   Widget build(BuildContext context) => const Scaffold(
-    body: Center(child: Text('Step Player (Sprint 5)')),
-  );
+        body: Center(child: Text('Step Player (Sprint 5)')),
+      );
 }
 
 // Sprint 2+ Stubs
@@ -185,8 +186,8 @@ class _ConsentScreenStub extends StatelessWidget {
   const _ConsentScreenStub();
   @override
   Widget build(BuildContext context) => const Scaffold(
-    body: Center(child: Text('Consent (Sprint 2)')),
-  );
+        body: Center(child: Text('Consent (Sprint 2)')),
+      );
 }
 
 // Sprint 3+ Stubs
@@ -194,8 +195,8 @@ class _OnboardingScreenStub extends StatelessWidget {
   const _OnboardingScreenStub();
   @override
   Widget build(BuildContext context) => const Scaffold(
-    body: Center(child: Text('Onboarding (Sprint 3)')),
-  );
+        body: Center(child: Text('Onboarding (Sprint 3)')),
+      );
 }
 
 // Sprint 8 Stubs
@@ -203,6 +204,6 @@ class _PaywallScreenStub extends StatelessWidget {
   const _PaywallScreenStub();
   @override
   Widget build(BuildContext context) => const Scaffold(
-    body: Center(child: Text('Paywall (Sprint 8)')),
-  );
+        body: Center(child: Text('Paywall (Sprint 8)')),
+      );
 }

@@ -24,7 +24,7 @@ jobs:
 
       - name: Format (fail on diff)
         working-directory: app
-        run: flutter format --set-exit-if-changed .
+        run: dart format --set-exit-if-changed lib/ test/
 
       - name: Analyze
         working-directory: app

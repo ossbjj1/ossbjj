@@ -1,5 +1,5 @@
 /// Centralized asset path registry for OSS.
-/// 
+///
 /// Prevents magic strings and enables type-safe asset references.
 /// Add new assets here as they're created.
 abstract class Assets {
