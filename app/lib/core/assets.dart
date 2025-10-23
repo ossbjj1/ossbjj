@@ -3,6 +3,10 @@
 /// Prevents magic strings and enables type-safe asset references.
 /// Add new assets here as they're created.
 abstract class Assets {
+  /// Private constructor to prevent instantiation.
+  /// This class is a static-only namespace for asset paths.
+  const Assets._();
+
   // Placeholder for future assets (Sprint 4+)
   // Example:
   // static const tatamiTexture = 'assets/images/tatami_bg.png';

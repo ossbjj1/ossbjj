@@ -71,25 +71,30 @@ final GoRouter appRouter = GoRouter(
   ],
 );
 
+// Routes where bottom nav should be hidden (detail/modal screens)
+const Set<String> _hideBottomNavRoutes = {
+  '/technique/',
+  '/step/',
+  '/paywall',
+  '/consent',
+  '/onboarding',
+};
+
 Widget? _buildBottomNav(BuildContext context) {
-  final location = GoRouterState.of(context).uri.path;
-  // Hide bottom nav on detail/modal routes
-  if (location.contains('/technique/') ||
-      location.contains('/step/') ||
-      location.contains('/paywall') ||
-      location.contains('/consent') ||
-      location.contains('/onboarding')) {
+  final matchedLocation = GoRouterState.of(context).matchedLocation;
+  // Hide bottom nav on detail/modal routes using exact/prefix matching
+  if (_hideBottomNavRoutes.any((route) => matchedLocation.startsWith(route))) {
     return null;
   }
   return Container(
-    color: Colors.grey[900],
+    color: const Color(0xFF121212), // Use design token from DsColors (dark surface)
     child: Row(
       children: [
-        _NavItem(label: 'Home', route: '/', currentLocation: location),
-        _NavItem(label: 'Learn', route: '/learn', currentLocation: location),
-        _NavItem(label: 'Stats', route: '/stats', currentLocation: location),
+        _NavItem(label: 'Home', route: '/', currentLocation: matchedLocation),
+        _NavItem(label: 'Learn', route: '/learn', currentLocation: matchedLocation),
+        _NavItem(label: 'Stats', route: '/stats', currentLocation: matchedLocation),
         _NavItem(
-            label: 'Settings', route: '/settings', currentLocation: location),
+            label: 'Settings', route: '/settings', currentLocation: matchedLocation),
       ],
     ),
   );

@@ -13,7 +13,11 @@ class RouteOrientationController {
     required List<DeviceOrientation> defaultOrientations,
     Map<String, List<DeviceOrientation>> routeOverrides = const {},
     OrientationSetter? setter,
-  })  : defaultOrientations = List.unmodifiable(defaultOrientations),
+  })  : assert(
+          defaultOrientations.isNotEmpty,
+          'defaultOrientations must not be empty; provide at least one valid DeviceOrientation',
+        ),
+        defaultOrientations = List.unmodifiable(defaultOrientations),
         routeOverrides = Map.unmodifiable(
           routeOverrides.map<String, List<DeviceOrientation>>(
             (key, value) => MapEntry<String, List<DeviceOrientation>>(
@@ -35,8 +39,22 @@ class RouteOrientationController {
   late final NavigatorObserver navigatorObserver =
       _RouteOrientationObserver(this);
 
+  /// Applies the default orientations to the device.
+  ///
+  /// Returns a Future that resolves when [SystemChrome.setPreferredOrientations]
+  /// completes. If the operation fails, the Future will complete with an error.
   Future<void> applyDefault() => _setter(defaultOrientations);
 
+  /// Applies the orientations for the given [routeName].
+  ///
+  /// If a route-specific override exists in [routeOverrides], those orientations
+  /// are applied. Otherwise, falls back to [defaultOrientations].
+  ///
+  /// Parameters:
+  ///   - [routeName]: The name of the route (from route settings).
+  ///
+  /// Returns a Future that resolves when [SystemChrome.setPreferredOrientations]
+  /// completes. If the operation fails, the Future will complete with an error.
   Future<void> applyForRoute(String? routeName) =>
       _setter(routeOverrides[routeName] ?? defaultOrientations);
 }
@@ -49,24 +67,48 @@ class _RouteOrientationObserver extends NavigatorObserver {
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
     super.didPush(route, previousRoute);
-    unawaited(_controller.applyForRoute(route.settings.name));
+    _controller.applyForRoute(route.settings.name).catchError(
+      (Object error, StackTrace stackTrace) {
+        debugPrint(
+          'RouteOrientationController.didPush failed for route '${route.settings.name}': $error\n$stackTrace',
+        );
+      },
+    );
   }
 
   @override
   void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
     super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
-    unawaited(_controller.applyForRoute(newRoute?.settings.name));
+    _controller.applyForRoute(newRoute?.settings.name).catchError(
+      (Object error, StackTrace stackTrace) {
+        debugPrint(
+          'RouteOrientationController.didReplace failed for route '${newRoute?.settings.name}': $error\n$stackTrace',
+        );
+      },
+    );
   }
 
   @override
   void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
     super.didPop(route, previousRoute);
-    unawaited(_controller.applyForRoute(previousRoute?.settings.name));
+    _controller.applyForRoute(previousRoute?.settings.name).catchError(
+      (Object error, StackTrace stackTrace) {
+        debugPrint(
+          'RouteOrientationController.didPop failed for route '${previousRoute?.settings.name}': $error\n$stackTrace',
+        );
+      },
+    );
   }
 
   @override
   void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) {
     super.didRemove(route, previousRoute);
-    unawaited(_controller.applyForRoute(previousRoute?.settings.name));
+    _controller.applyForRoute(previousRoute?.settings.name).catchError(
+      (Object error, StackTrace stackTrace) {
+        debugPrint(
+          'RouteOrientationController.didRemove failed for route '${previousRoute?.settings.name}': $error\n$stackTrace',
+        );
+      },
+    );
   }
 }
