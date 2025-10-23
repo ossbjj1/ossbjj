@@ -8,7 +8,7 @@ class FeatureFlags {
 
   // Note: Not thread-safe. Assumes single-threaded access or external synchronization.
   static bool? _gatingEnabledOverride;
-  static bool? _payallEnabledOverride;
+  static bool? _paywallEnabledOverride;
 
   /// Allows runtime systems to override server-side gating availability.
   static void setGatingEnabledOverride(bool? value) {
