@@ -1,0 +1,107 @@
+{
+  "onboarding": {
+    "headline": {"de": "Zeit auf der Matte. Los.", "en": "Time on the mat. Go."},
+    "variant_prompt": {"de": "Gi oder No-Gi?", "en": "Gi or No-Gi?"},
+    "belt": {"de": "Dein Gürtel?", "en": "Your belt?"},
+    "goal": {"de": "Wochenziel?", "en": "Weekly goal?"}
+  },
+  "tabs": {
+    "home": {"de": "Home", "en": "Home"},
+    "learn": {"de": "Lernen", "en": "Learn"},
+    "stats": {"de": "Statistik", "en": "Stats"},
+    "settings": {"de": "Einstellungen", "en": "Settings"}
+  },
+  "learn": {
+    "variant_title": {"de": "Gi oder No-Gi?", "en": "Gi or No-Gi?"},
+    "variant_gi": {"de": "Gi", "en": "Gi"},
+    "variant_nogi": {"de": "No-Gi", "en": "No-Gi"}
+  },
+  "sensei": {
+    "grip": {"de": "Hol den Griff. Punkt.", "en": "Get the grip. Period.", "raw_de": "Hol den verdammten Griff.", "raw_en": "Get the damn grip."},
+    "angle": {"de": "Winkel schlägt Kraft.", "en": "Angle beats strength.", "raw_de": "Hör auf zu drücken. Winkel, nicht Ego.", "raw_en": "Stop pushing. Angle, not ego."},
+    "legover": {"de": "Leg drüber. Schließ.", "en": "Leg over. Lock.", "raw_de": "Leg drüber. Kopf runter – jetzt.", "raw_en": "Leg over. Head down – now."},
+    "finish": {"de": "Hip extend. Tap = sofort lösen.", "en": "Hip extend. Tap = release immediately."}
+  },
+  "step": {
+    "title": {"de": "Step {n} – {label}", "en": "Step {n} – {label}"},
+    "complete": {"de": "Fertig", "en": "Done"},
+    "locked": {"de": "Gesperrt. Erst {prev}.", "en": "Locked. Finish {prev} first."}
+  },
+  "toast": {
+    "step_done": {"de": "Sitzt. Weiter.", "en": "Got it. Next.", "raw_de": "Sitzt. Weiter, keine Ausreden.", "raw_en": "Got it. Next, no excuses."},
+    "streak": {"de": "{n} Tage Streak. Respekt.", "en": "{n} day streak. Respect."},
+    "achievement": {"de": "🏆 {title} freigeschaltet!", "en": "🏆 {title} unlocked!"}
+  },
+  "gate": {
+    "prereq_missing": {"de": "Vorherigen Step erledigen.", "en": "Complete previous step."},
+    "paywall": {"de": "Free endet hier. Pro schaltet frei.", "en": "Free ends here. Pro unlocks."},
+    "locked": {"de": "Gesperrt. Erst Step {prev}.", "en": "Locked. Finish step {prev} first."}
+  },
+  "error": {
+    "network": {"de": "Kein Netz. Wiederholen.", "en": "No network. Retry."},
+    "generic": {"de": "Fehler. Nochmal probieren.", "en": "Error. Try again."}
+  },
+  "paywall": {
+    "title": {"de": "Willst du finishen oder scrollen?", "en": "Finish or scroll?", "raw_de": "Trainieren oder rumscrollen?", "raw_en": "Train or scroll?"},
+    "subtitle": {"de": "Alle Steps freischalten.", "en": "Unlock all steps."},
+    "cta_primary": {"de": "Pro holen und rollen", "en": "Get Pro and roll"},
+    "cta_secondary": {"de": "Später", "en": "Later"},
+    "restore": {"de": "Käufe wiederherstellen", "en": "Restore purchases"},
+    "benefit_1": {"de": "Alle 100+ Steps", "en": "All 100+ steps"},
+    "benefit_2": {"de": "Gi + No-Gi", "en": "Gi + No-Gi"},
+    "benefit_3": {"de": "Kein Limit", "en": "No limit"}
+  },
+  "streak": {
+    "alive": {"de": "{n} Tage Streak. Respekt.", "en": "{n} day streak. Respect."},
+    "lost": {"de": "Streak gerissen. Neu starten.", "en": "Streak lost. Start over."}
+  },
+  "stats": {
+    "completed": {"de": "{n} Steps erledigt", "en": "{n} steps completed"},
+    "techniques": {"de": "{n} Techniken gemeistert", "en": "{n} techniques mastered"},
+    "repeat": {"de": "Wiederholen", "en": "Repeat"}
+  },
+  "roadmap": {
+    "title": {"de": "📅 Nächste Inhalte", "en": "📅 What's coming"},
+    "status_released": {"de": "Jetzt freigeschaltet", "en": "Now unlocked"},
+    "status_locked": {"de": "Kommt bald", "en": "Coming soon"},
+    "guard_passes": {"de": "Abwehr-Techniken", "en": "Guard Passes"},
+    "leg_locks": {"de": "Beintechnik-System", "en": "Leg Lock System"},
+    "advanced_escapes": {"de": "Fortgeschrittene Fluchtbewegungen", "en": "Advanced Escapes"}
+  },
+  "achievements": {
+    "title": {"de": "🏆 Deine Erfolge", "en": "🏆 Your achievements"},
+    "unlocked": {"de": "✅ Erreichte Abzeichen", "en": "✅ Unlocked badges"},
+    "upcoming": {"de": "🔒 Nächste Abzeichen", "en": "🔒 Next badges"},
+    "first_grip": {"de": "Erstes Greifen", "en": "First Grip"},
+    "streak_7days": {"de": "Streak-Krieger", "en": "Streak Warrior"},
+    "tech_master": {"de": "Technik-Meister", "en": "Tech Master"},
+    "purple_belt": {"de": "Purple Belt Ready", "en": "Purple Belt Ready"},
+    "all_positions": {"de": "Alle Positionen", "en": "All Positions"},
+    "steps_25": {"de": "25 Steps gemeistert", "en": "25 Steps Mastered"}
+  },
+  "testimonials": {
+    "title": {"de": "💬 Was andere sagen", "en": "💬 What others say"},
+    "prev": {"de": "← Zurück", "en": "← Back"},
+    "next": {"de": "Weiter →", "en": "Next →"}
+  },
+  "settings": {
+    "language": {"de": "Sprache", "en": "Language"},
+    "consent": {"de": "Datenschutz & Consent", "en": "Privacy & Consent"},
+    "tone": {"de": "Tonintensität", "en": "Tone intensity"},
+    "tone_dojo": {"de": "Dojo (Standard)", "en": "Dojo (Default)"},
+    "tone_raw": {"de": "RAW (opt-in)", "en": "RAW (opt-in)"},
+    "audio": {"de": "Audio-Feedback", "en": "Audio feedback"},
+    "delete_account": {"de": "Konto & Daten löschen", "en": "Delete account & data"},
+    "logout": {"de": "Abmelden", "en": "Log out"}
+  },
+  "consent": {
+    "title": {"de": "Deine Zustimmung", "en": "Your consent"},
+    "analytics": {"de": "Analytics (PostHog)", "en": "Analytics (PostHog)"},
+    "media": {"de": "Medien-Download", "en": "Media download"},
+    "save": {"de": "Speichern", "en": "Save"}
+  },
+  "legal": {
+    "privacy": {"de": "Datenschutz", "en": "Privacy Policy"},
+    "terms": {"de": "AGB", "en": "Terms of Service"}
+  }
+}

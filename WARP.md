@@ -4,9 +4,11 @@ Zweck
 - Diese Datei steuert, wie Warp in diesem Repo arbeitet. Vor jeder Aufgabe lesen und befolgen.
 
 Roadmap-Pflicht
-- Vor jeder Aufgabe: `docs/OSS_ROADMAP_v1.md` + `docs/OSS_PRODUCT_CONTEXT.md` lesen
+- Vor jeder Aufgabe: `docs/roadmap/OSS_ROADMAP_INDEX.md` lesen → relevanten Sprint-File öffnen
+- `docs/OSS_PRODUCT_CONTEXT.md` für Use-Cases/Flows
+- `docs/i18n_keys.json` für Microcopy (maschinenlesbar)
+- `docs/adr/` für architektonische Entscheidungen
 - Dateipfade aus Roadmap übernehmen (kein Raten)
-- i18n-Keys aus `docs/OSS_TONE_EAGLE_FANG.md` nutzen
 
 Repo-Struktur (SSOT)
 ```
