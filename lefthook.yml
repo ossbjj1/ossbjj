@@ -13,17 +13,4 @@ pre-commit:
           echo "deno not found, skipping deno fmt"
         fi
 
-pre-push:
-  parallel: false
-  commands:
-    flutter-analyze:
-      description: "Run Flutter analyze before pushing"
-      run: cd app && flutter analyze
-    deno-fmt-check:
-      description: "Verify Deno formatting before pushing"
-      run: |
-        if command -v deno >/dev/null 2>&1; then
-          deno fmt --check supabase/functions
-        else
-          echo "deno not found, skipping deno fmt --check"
-        fi
+# Note: Keep push hooks empty to minimize friction; CI will run full checks.
