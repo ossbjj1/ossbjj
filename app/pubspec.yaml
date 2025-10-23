@@ -12,8 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # State management
-  provider: ^6.1.5+1
+  # State management (standardized on Riverpod)
   riverpod: ^2.4.0
 
   # Navigation
@@ -45,9 +44,6 @@ dependencies:
 
   # Lottie animations
   lottie: ^2.5.0
-
-  # QR code (optional for future)
-  qr_flutter: ^4.0.0
 
   # Fonts
   google_fonts: ^6.1.0

@@ -58,7 +58,7 @@
 ---
 
 ## 🔗 Links
-- **Health-Endpoint (deployed):** `https://xqgqentkowzxckwlmyqc.supabase.co/functions/v1/health` ✅
+- **Health-Endpoint (deployed):** `https://<your-project-id>.supabase.co/functions/v1/health` ✅
 - **Figma (falls UI):** `<link>`
 - **Related Issue/ADR:** `<link>`
 

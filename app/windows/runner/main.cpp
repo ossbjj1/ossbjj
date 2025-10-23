@@ -17,6 +17,28 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   // plugins.
   ::CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 
+  // Enable Per-Monitor DPI awareness for HiDPI support (Windows 10+)
+  // Prefers Per-Monitor V2 if available, falls back to V1 or legacy awareness.
+  typedef BOOL(WINAPI * SetProcessDpiAwarenessContextProc)(DPI_AWARENESS_CONTEXT);
+  auto set_process_dpi_awareness_context =
+      reinterpret_cast<SetProcessDpiAwarenessContextProc>(
+          GetProcAddress(GetModuleHandle(L"user32.dll"),
+                         "SetProcessDpiAwarenessContext"));
+  if (set_process_dpi_awareness_context) {
+    set_process_dpi_awareness_context(
+        DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+  } else {
+    // Fallback for older Windows versions
+    typedef HRESULT(WINAPI * SetProcessDpiAwarenessProc)(int);
+    auto set_process_dpi_awareness =
+        reinterpret_cast<SetProcessDpiAwarenessProc>(
+            GetProcAddress(GetModuleHandle(L"shcore.dll"),
+                           "SetProcessDpiAwareness"));
+    if (set_process_dpi_awareness) {
+      set_process_dpi_awareness(2); // PROCESS_PER_MONITOR_DPI_AWARE
+    }
+  }
+
   flutter::DartProject project(L"data");
 
   std::vector<std::string> command_line_arguments =
@@ -28,6 +50,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   Win32Window::Point origin(10, 10);
   Win32Window::Size size(1280, 720);
   if (!window.Create(L"oss", origin, size)) {
+    ::CoUninitialize();
     return EXIT_FAILURE;
   }
   window.SetQuitOnClose(true);

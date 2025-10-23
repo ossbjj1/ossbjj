@@ -100,7 +100,12 @@ const wchar_t* WindowClassRegistrar::GetWindowClass() {
     window_class.hbrBackground = 0;
     window_class.lpszMenuName = nullptr;
     window_class.lpfnWndProc = Win32Window::WndProc;
-    RegisterClass(&window_class);
+    ATOM class_atom = RegisterClass(&window_class);
+    if (!class_atom) {
+      DWORD error = GetLastError();
+      fprintf(stderr, "Failed to register window class: error %lu\n", error);
+      return nullptr;
+    }
     class_registered_ = true;
   }
   return kWindowClassName;

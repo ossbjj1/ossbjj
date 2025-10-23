@@ -35,6 +35,7 @@ Sprint 0 legt die technische Grundlage ohne User-Daten:
 - Runtime-Gate via `consent_analytics` Flag (siehe S2 Task 2)
 
 **Code-Vorbereitung:**
+
 ```dart
 // Beispiel für Sprint 2:
 if (userConsent.analytics) {
