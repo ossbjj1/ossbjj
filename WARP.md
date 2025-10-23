@@ -3,6 +3,57 @@
 Zweck
 - Diese Datei steuert, wie Warp in diesem Repo arbeitet. Vor jeder Aufgabe lesen und befolgen.
 
+Roadmap-Pflicht
+- Vor jeder Aufgabe: `docs/OSS_ROADMAP_v1.md` + `docs/OSS_PRODUCT_CONTEXT.md` lesen
+- Dateipfade aus Roadmap übernehmen (kein Raten)
+- i18n-Keys aus `docs/OSS_TONE_EAGLE_FANG.md` nutzen
+
+Repo-Struktur (SSOT)
+```
+/app/
+  lib/
+    app.dart
+    router.dart
+    theme/
+    l10n/
+    core/{design_tokens,services}/
+    features/
+      home/
+      learn/
+      technique/
+      step_player/
+      paywall/
+      stats/
+      settings/
+      onboarding/
+      auth/
+      consent/
+  pubspec.yaml
+
+/server/supabase/
+  migrations/
+  policies/
+  functions/
+    gating_step_complete/
+    rc_webhook/
+    health/
+  rpc/delete_user_data.sql
+
+/seeds/ {techniques.json, steps.json, content_roadmap.json, achievements.json, testimonials.json}
+/design/ {tokens/, assets/}
+/infra/ci/github-actions.yml
+/docs/ {OSS_ROADMAP_v1.md, OSS_PRODUCT_CONTEXT.md, OSS_TONE_EAGLE_FANG.md, API_CONTRACTS.md, DB_SCHEMA_MIN.sql, PR_TEMPLATE.md}
+/context/agents/ {_acceptance_v1.1.md, _auto_role_map.md, reqing-ball.md, ui-polisher.md}
+.coderabbit.yaml
+WARP.md
+README.md
+```
+- **Features:** 1 Ordner pro Screen/Flow (z.B. `features/home/`, `features/stats/`)
+- **Core:** Shared Code (services, design_tokens, utils)
+- **Migrations:** SQL-Dateien chronologisch (`001_initial.sql`, `002_achievements.sql`)
+- **Functions:** 1 Ordner pro Edge Fn (z.B. `gating_step_complete/index.ts`)
+- **Seeds:** JSON-Dateien für Testdaten (techniques, steps, roadmap, achievements, testimonials)
+
 Operating Rules
 - Pflicht-Checkpoints in jeder Antwort:
   1) 🔵 Role: <rolle> | Keywords: [k1,…]
