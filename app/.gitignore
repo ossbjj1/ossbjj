@@ -1,0 +1,45 @@
+# Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+*.packages
+build/
+.gradle/
+*.local
+*.log
+
+# iOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/Flutter.framework/**/*
+ios/Flutter/GeneratedPluginRegistrant.*
+ios/.generated/
+ios/Runner/GeneratedPluginRegistrant.*
+
+# Android
+android/.gradle/
+android/.gradle/**
+android/app/debug/
+android/app/release/
+android/app/.gradle/
+android/local.properties
+android/.android/
+android/gradle-wrapper.jar
+
+# General
+.DS_Store
+.env
+.env.local
+*.iml
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Web
+web/
+.web/

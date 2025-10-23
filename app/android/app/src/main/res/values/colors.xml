@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- OSS Dark Theme -->
+    <color name="launch_background">#0a0a0a</color>
+    <color name="primary">#DC143C</color>
+    <color name="secondary">#1E90FF</color>
+    <color name="surface">#121212</color>
+</resources>
