@@ -6,6 +6,8 @@ reviews:
     enabled: true
     drafts: false
   request_changes_workflow: true
+  commit_status:
+    enabled: true
   
   # OSS-specific: enforce WARP.md governance
   path_filters:
@@ -14,33 +16,22 @@ reviews:
     - "!**/supabase/.temp/**"
     - "!**/.dart_tool/**"
     - "!**/build/**"
-
-commit_status:
-  enabled: true
-
-# OSS-specific checks
-checks:
-  # Enforce WARP.md checkpoints in PR descriptions
-  - name: "WARP.md Checkpoints"
-    description: "PR must include Role, BMAD, and Prove sections"
-    severity: error
   
-  # No secrets in code
-  - name: "Secrets Detection"
-    description: "Detected potential secret. Use environment variables."
-    pattern: "(api_key|apiKey|secret|password|token)\\s*=\\s*['\"](?!{{).*['\"]" 
-    severity: error
-  
-  # Server-side gating enforcement
-  - name: "Client-Side Entitlement Check"
-    description: "Entitlement checks must be server-side (Edge Functions)"
-    pattern: "(entitlement|premium).*==|if.*entitlement"
-    files: "app/**/*.dart"
-    severity: warning
-  
-  # DSGVO compliance
-  - name: "Telemetry Consent Gate"
-    description: "Ensure telemetry is gated by consent_analytics flag"
-    pattern: "(PostHog|Sentry|analytics)\\.(init|capture|addBreadcrumb)"
-    files: "app/**/*.dart"
-    severity: warning
+  # OSS-specific governance checks
+  pre_merge_checks:
+    custom_checks:
+      - name: "WARP.md Checkpoints"
+        instructions: "PR must include 🔵 Role section, 🟢 BMAD (Business/Modeling/Architecture/DoD) section, and ✅ Prove section with test/lint/format results"
+        mode: error
+      
+      - name: "Secrets Detection"
+        instructions: "Check for hardcoded API keys, secrets, passwords, or tokens. All credentials must use environment variables with {{SECRET_NAME}} pattern. Look for patterns like apiKey=, password=, token= with literal string values."
+        mode: error
+      
+      - name: "Client-Side Entitlement Check"
+        instructions: "Entitlement and paywall checks must be server-authoritative via Edge Functions (POST /gating/step-complete). Do not add client-side checks in app/**/*.dart that trust entitlement flags. Refer to WARP.md Security Rule: 'MIWF: Engine darf nackt laufen — Daten nie'."
+        mode: warning
+      
+      - name: "Telemetry Consent Gate"
+        instructions: "Ensure all telemetry calls (PostHog, Sentry, analytics) are gated by consent_analytics flag. No event tracking without explicit user opt-in. Verify that analytics init and event sends check user consent first (DSGVO compliance)."
+        mode: warning

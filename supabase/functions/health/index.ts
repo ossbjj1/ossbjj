@@ -1,15 +1,25 @@
-// deno-lint-ignore-file no-explicit-any
-// Simple health endpoint for uptime checks (EU). Returns 200 and basic metadata.
+// Simple health endpoint for uptime checks (multi-region). Returns 200 and basic metadata.
 // Deploy with: supabase functions deploy health --project-ref <ref>
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 
-function jsonResponse(body: any, status = 200) {
+interface HealthResponse {
+  status: string;
+  region: string;
+  time: string;
+}
+
+function jsonResponse(
+  body: Record<string, unknown>,
+  status = 200,
+): Response {
   return new Response(JSON.stringify(body), {
     status,
     headers: {
       "Content-Type": "application/json",
       "Cache-Control": "no-store",
       "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, Accept, Origin",
+      "Access-Control-Allow-Methods": "HEAD, GET, OPTIONS",
     },
   });
 }
@@ -20,15 +30,21 @@ serve((req) => {
       status: 204,
       headers: {
         "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET,OPTIONS",
+        "Access-Control-Allow-Methods": "HEAD, GET, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization, Accept, Origin",
       },
     });
   }
 
-  if (req.method !== "GET") {
-    return jsonResponse({ error: "method_not_allowed" }, 405);
+  if (req.method === "HEAD" || req.method === "GET") {
+    const region = Deno.env.get("REGION") || "eu";
+    const now = new Date().toISOString();
+    const response: HealthResponse = { status: "ok", region, time: now };
+    return jsonResponse(response);
   }
 
-  const now = new Date().toISOString();
-  return jsonResponse({ status: "ok", region: "eu", time: now });
+  return jsonResponse(
+    { error: "method_not_allowed" },
+    405,
+  );
 });

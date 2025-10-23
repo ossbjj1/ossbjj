@@ -39,7 +39,6 @@ android/gradle-wrapper.jar
 *.swp
 *.swo
 *~
-.DS_Store
 
 # Web
 web/

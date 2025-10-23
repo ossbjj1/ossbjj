@@ -10,11 +10,13 @@ PRs auf `main` können nur gemerged werden, wenn:
 ## 📋 Schritt-für-Schritt Anleitung
 
 ### 1. **Gehe zu GitHub Repo Settings**
-```
+
+```bash
 https://github.com/ossbjj1/ossbjj/settings/branches
 ```
 
 ### 2. **Bearbeite die `main` Branch Protection Rule**
+
 - Klicke auf **"Edit"** neben der `main` Regel
 - Falls keine Regel existiert: **"Add branch protection rule"**
   - Branch name pattern: `main`
@@ -22,14 +24,16 @@ https://github.com/ossbjj1/ossbjj/settings/branches
 ### 3. **Aktiviere diese Optionen:**
 
 #### ✅ **Require a pull request before merging**
-```
+
+```text
 ☑️ Require a pull request before merging
    ☐ Require approvals: 0 (falls solo)
        ODER 1+ (falls Team)
 ```
 
 #### ✅ **Require status checks to pass before merging**
-```
+
+```text
 ☑️ Require status checks to pass before merging
    ☑️ Require branches to be up to date before merging
    
@@ -44,25 +48,32 @@ https://github.com/ossbjj1/ossbjj/settings/branches
 - Erstelle zuerst einen PR → Warte auf CI → Dann erscheinen sie in der Suche
 
 #### ✅ **Require conversation resolution before merging**
-```
+
+```text
 ☑️ Require conversation resolution before merging
 ```
+
 → Alle CodeRabbit-Kommentare müssen "Resolved" sein
 
 #### ✅ **Require linear history**
-```
+
+```text
 ☑️ Require linear history
 ```
+
 → Keine Merge-Commits, nur Rebase/Squash
 
 #### ✅ **Do not allow bypassing the above settings**
-```
+
+```text
 ☑️ Do not allow bypassing the above settings
 ```
+
 → Auch du als Admin musst die Regeln befolgen
 
 ### 4. **Optional (empfohlen):**
-```
+
+```text
 ☑️ Require deployments to succeed before merging
 ☑️ Lock branch (nur für Production-Branches)
 ```
@@ -74,14 +85,16 @@ https://github.com/ossbjj1/ossbjj/settings/branches
 ## 🧪 Testen
 
 ### **Nach Aktivierung:**
+
 1. Erstelle einen Test-Branch:
-   ```bash
-   git checkout -b test/branch-protection
-   echo "test" >> README.md
-   git add README.md
-   git commit -m "test: verify branch protection"
-   git push -u origin test/branch-protection
-   ```
+
+```bash
+git checkout -b test/branch-protection
+echo "test" >> README.md
+git add README.md
+git commit -m "test: verify branch protection"
+git push -u origin test/branch-protection
+```
 
 2. Erstelle PR auf GitHub
 
@@ -96,6 +109,7 @@ https://github.com/ossbjj1/ossbjj/settings/branches
 ## 🚨 Troubleshooting
 
 ### **Problem: Status Checks tauchen nicht in Suche auf**
+
 **Lösung:**
 1. Erstelle zuerst einen PR (dieser Sprint-0 PR)
 2. Warte bis CI gelaufen ist (~2-3 min)
@@ -104,6 +118,7 @@ https://github.com/ossbjj1/ossbjj/settings/branches
 5. Jetzt sollten sie erscheinen
 
 ### **Problem: CodeRabbit erscheint nicht**
+
 **Lösung:**
 1. Prüfe ob CodeRabbit App installiert ist: https://github.com/apps/coderabbit-ai
 2. Autorisiere für `ossbjj1/ossbjj` Repo
