@@ -87,14 +87,19 @@ Widget? _buildBottomNav(BuildContext context) {
     return null;
   }
   return Container(
-    color: const Color(0xFF121212), // Use design token from DsColors (dark surface)
+    color: const Color(
+        0xFF121212), // Use design token from DsColors (dark surface)
     child: Row(
       children: [
         _NavItem(label: 'Home', route: '/', currentLocation: matchedLocation),
-        _NavItem(label: 'Learn', route: '/learn', currentLocation: matchedLocation),
-        _NavItem(label: 'Stats', route: '/stats', currentLocation: matchedLocation),
         _NavItem(
-            label: 'Settings', route: '/settings', currentLocation: matchedLocation),
+            label: 'Learn', route: '/learn', currentLocation: matchedLocation),
+        _NavItem(
+            label: 'Stats', route: '/stats', currentLocation: matchedLocation),
+        _NavItem(
+            label: 'Settings',
+            route: '/settings',
+            currentLocation: matchedLocation),
       ],
     ),
   );

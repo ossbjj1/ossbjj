@@ -25,9 +25,12 @@ class AuthStrings {
   static const successCta = 'Continue';
 
   // Errors
-  static const errEmailInvalid = 'Invalid email format. Please check and try again.';
-  static const errPasswordInvalid = 'Incorrect password. Please try again or reset.';
-  static const errLoginUnavailable = 'This login is currently unavailable. Please try again later.';
+  static const errEmailInvalid =
+      'Invalid email format. Please check and try again.';
+  static const errPasswordInvalid =
+      'Incorrect password. Please try again or reset.';
+  static const errLoginUnavailable =
+      'This login is currently unavailable. Please try again later.';
   static const errGeneric = 'Something went wrong. Please try again later.';
 
   // Hints
