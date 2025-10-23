@@ -4,11 +4,11 @@ on:
   push:
     branches: [main]
     paths:
-      - 'server/supabase/functions/**'
+      - 'supabase/functions/**'
   pull_request:
     branches: [main]
     paths:
-      - 'server/supabase/functions/**'
+      - 'supabase/functions/**'
 
 jobs:
   lint:
@@ -26,7 +26,7 @@ jobs:
         run: deno --version
 
       - name: Format Check
-        run: deno fmt --check server/supabase/functions
+        run: deno fmt --check supabase/functions
 
       - name: Lint
-        run: deno lint server/supabase/functions
+        run: deno lint supabase/functions
