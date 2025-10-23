@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1,
+    "key": "first_grip",
+    "title_de": "Erstes Greifen",
+    "title_en": "First Grip",
+    "description_de": "Step 1 erledigt.",
+    "description_en": "Completed your first step.",
+    "icon": "🥇",
+    "unlock_condition": {"steps_completed": 1}
+  },
+  {
+    "id": 2,
+    "key": "streak_7",
+    "title_de": "Streak-Krieger (7)",
+    "title_en": "Streak Warrior (7)",
+    "description_de": "7 Tage am Stück trainiert.",
+    "description_en": "7-day streak.",
+    "icon": "🔥",
+    "unlock_condition": {"streak_days": 7}
+  },
+  {
+    "id": 3,
+    "key": "steps_25",
+    "title_de": "Purple Path (25)",
+    "title_en": "Purple Path (25)",
+    "description_de": "25 Steps erledigt.",
+    "description_en": "Completed 25 steps.",
+    "icon": "🛡️",
+    "unlock_condition": {"steps_completed": 25}
+  },
+  {
+    "id": 4,
+    "key": "tech_5",
+    "title_de": "Technik-Meister (5)",
+    "title_en": "Technique Master (5)",
+    "description_de": "5 Techniken 100% abgeschlossen.",
+    "description_en": "5 techniques completed 100%.",
+    "icon": "🏹",
+    "unlock_condition": {"techniques_completed": 5}
+  }
+]

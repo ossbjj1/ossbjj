@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "release_date": "2025-11-12",
+    "title_de": "Guard Passes",
+    "title_en": "Guard Passes",
+    "description_de": "4 neue Pässe – Kontrolle statt Chaos.",
+    "description_en": "4 new passes – control the chaos.",
+    "technique_count": 4,
+    "status": "planned"
+  },
+  {
+    "id": 2,
+    "release_date": "2025-11-26",
+    "title_de": "Leg Lock Einstieg",
+    "title_en": "Leg Lock Basics",
+    "description_de": "6 Basics, sicher & sauber.",
+    "description_en": "6 basics, safe & clean.",
+    "technique_count": 6,
+    "status": "planned"
+  },
+  {
+    "id": 3,
+    "release_date": "2025-12-10",
+    "title_de": "Advanced Escapes",
+    "title_en": "Advanced Escapes",
+    "description_de": "Wenn du unten bist – rauskommen.",
+    "description_en": "When you're stuck – get out.",
+    "technique_count": 8,
+    "status": "planned"
+  }
+]
