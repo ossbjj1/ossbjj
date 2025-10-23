@@ -6,3 +6,7 @@ Dieses Repo enthält die Arbeitsweise (WARP.md) und SSOT-Governance für den sp�
 - context/agents: SSOT-Dateien (Auto‑Role Map, Acceptance, Soft‑Gates)
 
 Hinweis: Noch keine CI/Code – nur Governance & Leitplanken.
+
+---
+
+Entwickler-Hooks: Siehe `docs/DEV_HOOKS.md` (auto-format on commit, quick checks on push).
