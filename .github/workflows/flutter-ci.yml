@@ -30,6 +30,10 @@ jobs:
         working-directory: app
         run: flutter analyze
 
+      - name: Code Metrics (optional, non-blocking)
+        working-directory: app
+        run: flutter pub run dart_code_metrics:metrics analyze lib --disable-sunset-warning || true
+
       - name: Test
         working-directory: app
         run: flutter test --no-pub
