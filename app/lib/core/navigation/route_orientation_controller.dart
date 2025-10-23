@@ -70,7 +70,7 @@ class _RouteOrientationObserver extends NavigatorObserver {
     _controller.applyForRoute(route.settings.name).catchError(
       (Object error, StackTrace stackTrace) {
         debugPrint(
-          'RouteOrientationController.didPush failed for route '${route.settings.name}': $error\n$stackTrace',
+          "RouteOrientationController.didPush failed for route '${route.settings.name}': $error\n$stackTrace",
         );
       },
     );
@@ -82,7 +82,7 @@ class _RouteOrientationObserver extends NavigatorObserver {
     _controller.applyForRoute(newRoute?.settings.name).catchError(
       (Object error, StackTrace stackTrace) {
         debugPrint(
-          'RouteOrientationController.didReplace failed for route '${newRoute?.settings.name}': $error\n$stackTrace',
+          "RouteOrientationController.didReplace failed for route '${newRoute?.settings.name}': $error\n$stackTrace",
         );
       },
     );
@@ -94,7 +94,7 @@ class _RouteOrientationObserver extends NavigatorObserver {
     _controller.applyForRoute(previousRoute?.settings.name).catchError(
       (Object error, StackTrace stackTrace) {
         debugPrint(
-          'RouteOrientationController.didPop failed for route '${previousRoute?.settings.name}': $error\n$stackTrace',
+          "RouteOrientationController.didPop failed for route '${previousRoute?.settings.name}': $error\n$stackTrace",
         );
       },
     );
@@ -106,7 +106,7 @@ class _RouteOrientationObserver extends NavigatorObserver {
     _controller.applyForRoute(previousRoute?.settings.name).catchError(
       (Object error, StackTrace stackTrace) {
         debugPrint(
-          'RouteOrientationController.didRemove failed for route '${previousRoute?.settings.name}': $error\n$stackTrace',
+          "RouteOrientationController.didRemove failed for route '${previousRoute?.settings.name}': $error\n$stackTrace",
         );
       },
     );
