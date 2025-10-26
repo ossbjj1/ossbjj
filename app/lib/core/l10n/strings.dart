@@ -67,7 +67,11 @@ class Strings {
   String get settingsPrivacy =>
       isDe ? 'Datenschutz-Einstellungen' : 'Privacy settings';
   String get settingsLanguage => isDe ? 'Sprache' : 'Language';
+  String get settingsLanguageNameDe => 'Deutsch';
+  String get settingsLanguageNameEn => 'English';
   String get settingsAudio => isDe ? 'Audio-Feedback' : 'Audio feedback';
+  String get settingsUpdateError =>
+      isDe ? 'Einstellung konnte nicht gespeichert werden' : 'Failed to save setting';
   String get settingsDeleteAccount =>
       isDe ? 'Konto & Daten löschen' : 'Delete account & data';
   String get settingsLogout => isDe ? 'Abmelden' : 'Log out';
@@ -116,11 +120,13 @@ class Strings {
   String get homeContinueTitle => isDe ? 'Weiter machen' : 'Continue';
   String get homeStartOnboarding =>
       isDe ? 'Onboarding starten' : 'Start Onboarding';
+  String get unableToLoadContinueHint =>
+      isDe ? 'Weiter-Hinweis konnte nicht geladen werden' : 'Unable to load continue hint';
 
   // Paywall
   String get paywallTitle => isDe ? 'Paywall' : 'Paywall';
 
-  /// Add missing localization keys for error handling.
+  /// Error messages.
   String get errorGeneric =>
       isDe ? 'Ein Fehler ist aufgetreten' : 'An error occurred';
 }

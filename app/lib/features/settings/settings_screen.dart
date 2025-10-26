@@ -27,7 +27,6 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  String? _settingsUpdateError;
 
   Future<void> _handleLogout(BuildContext context) async {
     try {
@@ -50,33 +49,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showModalBottomSheet(
       context: context,
       builder: (ctx) {
+        final t = StringsScope.of(ctx);
         return Container(
           color: DsColors.bgSurface,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                title: const Text(
-                  'Deutsch',
-                  style: TextStyle(
+                title: Text(
+                  t.settingsLanguageNameDe,
+                  style: const TextStyle(
                     color: DsColors.textPrimary,
                   ),
                 ),
                 onTap: () async {
-                  await widget.localeService.setLocale(const Locale('de'));
-                  if (mounted) Navigator.pop(context);
+                  try {
+                    await widget.localeService.setLocale(const Locale('de'));
+                    if (ctx.mounted) Navigator.pop(ctx);
+                  } catch (e) {
+                    debugPrint('Failed to set locale: $e');
+                  }
                 },
               ),
               ListTile(
-                title: const Text(
-                  'English',
-                  style: TextStyle(
+                title: Text(
+                  t.settingsLanguageNameEn,
+                  style: const TextStyle(
                     color: DsColors.textPrimary,
                   ),
                 ),
                 onTap: () async {
-                  await widget.localeService.setLocale(const Locale('en'));
-                  if (mounted) Navigator.pop(context);
+                  try {
+                    await widget.localeService.setLocale(const Locale('en'));
+                    if (ctx.mounted) Navigator.pop(ctx);
+                  } catch (e) {
+                    debugPrint('Failed to set locale: $e');
+                  }
                 },
               ),
             ],
@@ -117,21 +125,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   try {
                     await widget.audioService.setEnabled(value);
                     // Optimistically updated via audioEnabled notifier
-                    if (mounted) {
-                      setState(() => _settingsUpdateError = null);
-                    }
                   } catch (e) {
                     // Revert on failure
-                    await widget.audioService.setEnabled(priorValue);
+                    try {
+                      await widget.audioService.setEnabled(priorValue);
+                    } catch (_) {
+                      // Ignore revert errors
+                    }
                     if (mounted) {
-                      setState(() {
-                        _settingsUpdateError =
-                            'Failed to update audio setting: $e';
-                      });
+                      final errorMsg = t.settingsUpdateError;
                       // ignore: use_build_context_synchronously
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text(_settingsUpdateError!),
+                          content: Text(errorMsg),
                           backgroundColor: Colors.red,
                         ),
                       );

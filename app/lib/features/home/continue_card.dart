@@ -46,7 +46,7 @@ class _ContinueCardState extends State<ContinueCard> {
               padding: const EdgeInsets.all(DsSpacing.lg),
               child: Center(
                 child: Text(
-                  'Unable to load continue hint',
+                  t.unableToLoadContinueHint,
                   style: DsTypography.bodyMedium.copyWith(
                     color: DsColors.textSecondary,
                   ),
@@ -57,7 +57,21 @@ class _ContinueCardState extends State<ContinueCard> {
         }
 
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          // Show sized loading placeholder instead of full-screen spinner
+          return Card(
+            color: DsColors.bgSurface,
+            margin: const EdgeInsets.all(DsSpacing.lg),
+            child: SizedBox(
+              height: 120,
+              child: Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ),
+            ),
+          );
         }
 
         final hint = snapshot.data;
