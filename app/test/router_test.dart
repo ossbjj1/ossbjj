@@ -328,8 +328,7 @@ void main() {
           final loc = state.matchedLocation;
 
           // Consent first
-          if (loc != '/consent' &&
-              !loc.startsWith('/legal/')) {
+          if (loc != '/consent' && !loc.startsWith('/legal/')) {
             return '/consent';
           }
 
