@@ -29,9 +29,9 @@ Die Roadmap ist in 2 Phasen aufgeteilt:
 
 ## 🎯 Aktueller Status
 
-**Sprint:** ✅ S1 Complete (Navigation-Shell, Bottom-Nav, Tests grün)
-**Nächster Schritt:** Sprint 2 starten (Consent, DSGVO, Legal, Auth)
-**Handoff:** siehe [SPRINT_1_HANDOFF.md](../SPRINT_1_HANDOFF.md)
+**Sprint:** ✅ S2 Complete (Consent, DSGVO, Legal, Auth)
+**Nächster Schritt:** Sprint 3 starten (Onboarding, Settings Basis)
+**PR:** https://github.com/ossbjj1/ossbjj/pull/5
 
 ---
 

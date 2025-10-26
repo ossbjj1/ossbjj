@@ -45,6 +45,8 @@
 
 **Ziel:** Nutzereinwilligung + Konto.
 
+**Status:** ✅ Done (Consent opt-in gates analytics; Auth + Legal + Settings implemented)
+
 **Tasks:**
 1. Consent-Modal: Toggles Analytics, Media; Links zu Privacy/AGB
 2. Runtime-Gate: PostHog/Sentry nur bei `consent_analytics == true`
