@@ -19,17 +19,28 @@ class GatingService {
         body: {'techniqueStepId': techniqueStepId},
       );
 
-      if (response.status != 200) {
-        throw Exception(
-            'Edge Function failed: ${response.status} ${response.data}');
+      if (response.status == 401) {
+        return const GatingAccess(allowed: false, reason: GatingReason.authRequired);
       }
 
-      final data = response.data as Map<String, dynamic>;
-      final allowed = data['allowed'] as bool;
-      final reasonStr = data['reason'] as String;
+      if (response.status != 200) {
+        throw Exception('Edge Function failed: ${response.status} ${response.data}');
+      }
+
+      final raw = response.data;
+      if (raw is! Map) {
+        _logger.w('Malformed gating response: non-map payload');
+        return const GatingAccess(allowed: false, reason: GatingReason.premiumRequired);
+      }
+      final data = Map<String, dynamic>.from(raw as Map);
+
+      final allowedVal = data['allowed'];
+      final reasonVal = data['reason'];
+
+      final bool allowed = allowedVal is bool ? allowedVal : false;
+      final String reasonStr = reasonVal is String ? reasonVal : 'premiumRequired';
 
       final reason = _parseGatingReason(reasonStr);
-
       return GatingAccess(allowed: allowed, reason: reason);
     } catch (e, stackTrace) {
       _logger.e('checkStepAccess failed', error: e, stackTrace: stackTrace);

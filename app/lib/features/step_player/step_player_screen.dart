@@ -68,7 +68,7 @@ class _StepPlayerScreenState extends State<StepPlayerScreen> {
                       height: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : Text(t.ctaContinue),
+                  : Text(t.ctaComplete),
             ),
           ],
         ),
@@ -85,13 +85,18 @@ class _StepPlayerScreenState extends State<StepPlayerScreen> {
       if (!mounted) return;
 
       if (result.success) {
+        final t = StringsScope.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Step completed!')),
+          SnackBar(
+            key: const Key('step_player_snackbar_success'),
+            content: Text(t.stepCompleted),
+          ),
         );
         context.pop();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
+            key: const Key('step_player_snackbar_failure'),
             content: Text(result.message),
             backgroundColor: DsColors.stateError,
           ),
@@ -103,6 +108,7 @@ class _StepPlayerScreenState extends State<StepPlayerScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
+          key: const Key('step_player_snackbar_error'),
           content: Text(t.errorGeneric),
           backgroundColor: DsColors.stateError,
         ),

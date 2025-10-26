@@ -10,7 +10,7 @@ Replaces client-side entitlement checks with server-side validation. Prevents by
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `CORS_ALLOWED_ORIGINS` | `""` | Comma-separated origins (e.g., `https://app.example.com,capacitor://localhost`). Empty = allow all (dev only). |
+| `CORS_ALLOWED_ORIGINS` | `""` | Comma-separated origins (e.g., `https://app.example.com,capacitor://localhost`). Empty = dev‑mode allow‑all (`*`) via dynamic CORS. |
 | `RL_USER_RATE` | `"30/m"` | Rate limit per user (format: `{num}/{m\|h}`). |
 | `RL_IP_RATE` | `"60/m"` | Rate limit per IP (fallback). |
 | `UPSTASH_REDIS_REST_URL` | - | Upstash Redis REST API URL (required for rate limiting). |
@@ -93,6 +93,8 @@ curl -H "Origin: https://evil.com" ...  # → 403
 
 ## Observability
 
+> Datenschutz: Niemals rohe User‑IDs an Sentry/PostHog senden. Nur pseudonyme IDs (z. B. hash(userId)). Telemetrie nur mit consent_analytics und bestehender DPA aktivieren.
+
 ### Structured Logs (JSON)
 All logs include:
 ```json
@@ -138,7 +140,7 @@ ORDER BY ts DESC LIMIT 100;
 - [ ] Set `RL_IP_RATE` (recommended: 60/m)
 - [ ] Set `LOG_LEVEL=warn` (reduce noise)
 - [ ] Monitor 429 rate via logs dashboard
-- [ ] Alert on 500 errors (Sentry/PostHog)
+- [ ] Alert on 500 errors (Sentry/PostHog) — keine PII: nur pseudonyme IDs (hash(userId)); Telemetrie nur mit consent_analytics und bestehender DPA
 
 ## Deployment
 

@@ -19,5 +19,6 @@ BEGIN
 END;
 $$;
 
--- Grant execute to authenticated users
+-- Restrict EXECUTE to authenticated users only
+REVOKE EXECUTE ON FUNCTION public.ensure_user_profile() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.ensure_user_profile() TO authenticated;

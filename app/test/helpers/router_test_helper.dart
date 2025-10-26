@@ -27,7 +27,10 @@ class RouterTestHelper {
         ),
         GoRoute(
           path: '/step/:id',
-          builder: (context, state) => const Scaffold(body: Text('Step')),
+          builder: (context, state) {
+            final id = state.pathParameters['id'] ?? '';
+            return Scaffold(body: Text('Step $id'));
+          },
         ),
         GoRoute(
           path: '/paywall',
