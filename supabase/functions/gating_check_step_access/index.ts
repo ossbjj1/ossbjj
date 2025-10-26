@@ -50,7 +50,8 @@ async function upstashIncr(
   if (!url || !token) return null; // Upstash not configured
 
   try {
-    const incrResp = await fetch(`${url}/incr/${key}`, {
+    const encKey = encodeURIComponent(key);
+    const incrResp = await fetch(`${url}/incr/${encKey}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const incrData = await incrResp.json();
@@ -58,7 +59,7 @@ async function upstashIncr(
 
     if (count === 1) {
       // First increment, set TTL
-      await fetch(`${url}/expire/${key}/${ttlSeconds}`, {
+      await fetch(`${url}/expire/${encKey}/${ttlSeconds}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
     }
@@ -96,20 +97,30 @@ function getOrigin(req: Request): string | null {
 
 // Helper: Get IP (Cloudflare/Deno Deploy)
 function getIp(req: Request): string {
-  return req.headers.get("CF-Connecting-IP") ||
-    req.headers.get("X-Forwarded-For")?.split(",")[0] ||
-    "unknown";
+  const cf = req.headers.get("CF-Connecting-IP");
+  if (cf) return cf;
+  const xr = req.headers.get("X-Real-IP");
+  if (xr) return xr;
+  const xc = req.headers.get("X-Client-IP");
+  if (xc) return xc;
+  const xff = req.headers.get("X-Forwarded-For");
+  if (xff && xff.length > 0) return xff.split(",")[0].trim();
+  return "unknown";
 }
 
 // Helper: CORS headers (dynamic origin)
-function getCorsHeaders(origin: string | null, allowedOrigins: Set<string>): Record<string, string> {
-  if (!origin || !allowedOrigins.has(origin)) {
-    return {}; // No CORS headers for disallowed origins
-  }
+function getCorsHeaders(
+  origin: string | null,
+  allowedOrigins: Set<string>,
+  allowAll: boolean,
+): Record<string, string> {
+  if (!origin) return {};
+  if (!allowAll && !allowedOrigins.has(origin)) return {};
   return {
-    "Access-Control-Allow-Origin": origin,
+    "Access-Control-Allow-Origin": allowAll ? "*" : origin,
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Max-Age": "600",
     "Vary": "Origin",
   };
 }
@@ -136,11 +147,12 @@ serve(async (req) => {
   // Parse CORS whitelist
   const corsOriginsEnv = Deno.env.get("CORS_ALLOWED_ORIGINS") || "";
   const allowedOrigins = new Set(corsOriginsEnv.split(",").map(o => o.trim()).filter(Boolean));
-  const corsHeaders = getCorsHeaders(origin, allowedOrigins);
+  const allowAll = allowedOrigins.size === 0; // dev-mode: allow all origins
+  const corsHeaders = getCorsHeaders(origin, allowedOrigins, allowAll);
 
   // CORS preflight
   if (req.method === "OPTIONS") {
-    return new Response("ok", { status: 204, headers: corsHeaders });
+    return new Response(null, { status: 204, headers: corsHeaders });
   }
 
   // Check origin (if configured)
@@ -173,9 +185,10 @@ serve(async (req) => {
     // 2. Rate limiting (per user preferred, IP fallback)
     const userRateConfig = parseEnvRate(Deno.env.get("RL_USER_RATE") || "30/m");
     const ipRateConfig = parseEnvRate(Deno.env.get("RL_IP_RATE") || "60/m");
-    const epochMinute = Math.floor(Date.now() / 60000);
-    const userKey = `rl:gating_check:user:${user.id}:${epochMinute}`;
-    const ipKey = `rl:gating_check:ip:${ip}:${epochMinute}`;
+    const userEpoch = Math.floor(Date.now() / (userRateConfig.windowSeconds * 1000));
+    const ipEpoch = Math.floor(Date.now() / (ipRateConfig.windowSeconds * 1000));
+    const userKey = `rl:gating_check:user:${user.id}:${userEpoch}`;
+    const ipKey = `rl:gating_check:ip:${ip}:${ipEpoch}`;
 
     const userRL = await checkRateLimit(userKey, userRateConfig);
     if (!userRL.ok) {
@@ -198,9 +211,16 @@ serve(async (req) => {
     }
 
     // 3. Parse request body
-    const { techniqueStepId }: CheckAccessRequest = await req.json();
-    if (!techniqueStepId) {
-      log("bad_request", { reqId, userId: user.id }, "warn");
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch (e) {
+      log("bad_request", { reqId, userId: user.id, parseError: String(e) }, "warn");
+      return resp({ error: "bad_request" }, 400, corsHeaders);
+    }
+    const techniqueStepId = (body as Record<string, unknown>)?.["techniqueStepId"];
+    if (typeof techniqueStepId !== "string" || techniqueStepId.length === 0) {
+      log("bad_request", { reqId, userId: user.id, reason: "missing_or_invalid_stepId" }, "warn");
       return resp({ error: "bad_request" }, 400, corsHeaders);
     }
 
@@ -266,6 +286,12 @@ serve(async (req) => {
   } catch (error) {
     const durationMs = Date.now() - t0;
     log("unexpected_error", { reqId, ip, error: String(error), durationMs }, "error");
-    return resp({ error: "server_error", detail: String(error) }, 500);
+    // Include CORS on 500
+    const corsOriginsEnv = Deno.env.get("CORS_ALLOWED_ORIGINS") || "";
+    const allowedOrigins = new Set(corsOriginsEnv.split(",").map(o => o.trim()).filter(Boolean));
+    const allowAll = allowedOrigins.size === 0;
+    const origin = getOrigin(req);
+    const headers = getCorsHeaders(origin, allowedOrigins, allowAll);
+    return resp({ error: "server_error", detail: String(error) }, 500, headers);
   }
 });

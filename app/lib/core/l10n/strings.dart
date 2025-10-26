@@ -130,7 +130,8 @@ class Strings {
   String get paywallTitle => isDe ? 'Paywall' : 'Paywall';
 
   // Step Player
-  String get stepCompleted => isDe ? 'Schritt abgeschlossen!' : 'Step completed!';
+  String get stepCompleted =>
+      isDe ? 'Schritt abgeschlossen!' : 'Step completed!';
 
   /// Error messages.
   String get errorGeneric =>

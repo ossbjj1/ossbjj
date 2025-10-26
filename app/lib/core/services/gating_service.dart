@@ -20,17 +20,20 @@ class GatingService {
       );
 
       if (response.status == 401) {
-        return const GatingAccess(allowed: false, reason: GatingReason.authRequired);
+        return const GatingAccess(
+            allowed: false, reason: GatingReason.authRequired);
       }
 
       if (response.status != 200) {
-        throw Exception('Edge Function failed: ${response.status} ${response.data}');
+        throw Exception(
+            'Edge Function failed: ${response.status} ${response.data}');
       }
 
       final raw = response.data;
       if (raw is! Map) {
         _logger.w('Malformed gating response: non-map payload');
-        return const GatingAccess(allowed: false, reason: GatingReason.premiumRequired);
+        return const GatingAccess(
+            allowed: false, reason: GatingReason.premiumRequired);
       }
       final data = Map<String, dynamic>.from(raw as Map);
 
@@ -38,7 +41,8 @@ class GatingService {
       final reasonVal = data['reason'];
 
       final bool allowed = allowedVal is bool ? allowedVal : false;
-      final String reasonStr = reasonVal is String ? reasonVal : 'premiumRequired';
+      final String reasonStr =
+          reasonVal is String ? reasonVal : 'premiumRequired';
 
       final reason = _parseGatingReason(reasonStr);
       return GatingAccess(allowed: allowed, reason: reason);

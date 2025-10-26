@@ -81,7 +81,8 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
 
       expect(find.byType(SnackBar), findsOneWidget);
-      expect(find.byKey(const Key('step_player_snackbar_success')), findsOneWidget);
+      expect(find.byKey(const Key('step_player_snackbar_success')),
+          findsOneWidget);
 
       verify(mockGatingService.completeStep('step-123')).called(1);
     });
@@ -102,7 +103,8 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
 
       expect(find.byType(SnackBar), findsOneWidget);
-      expect(find.byKey(const Key('step_player_snackbar_failure')), findsOneWidget);
+      expect(find.byKey(const Key('step_player_snackbar_failure')),
+          findsOneWidget);
     });
 
     testWidgets('shows generic error on exception', (tester) async {
@@ -116,7 +118,8 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
 
       expect(find.byType(SnackBar), findsOneWidget);
-      expect(find.byKey(const Key('step_player_snackbar_error')), findsOneWidget);
+      expect(
+          find.byKey(const Key('step_player_snackbar_error')), findsOneWidget);
     });
 
     testWidgets('button re-enables after error', (tester) async {
@@ -159,7 +162,8 @@ void main() {
 
       // Success snackbar should appear (idempotent still shows success)
       expect(find.byType(SnackBar), findsOneWidget);
-      expect(find.byKey(const Key('step_player_snackbar_success')), findsOneWidget);
+      expect(find.byKey(const Key('step_player_snackbar_success')),
+          findsOneWidget);
     });
   });
 }
