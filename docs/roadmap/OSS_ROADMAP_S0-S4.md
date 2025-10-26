@@ -63,15 +63,26 @@
 
 **Ziel:** Personalisierung; Basis-Einstellungen vollständig.
 
+**Status:** ✅ Done (PR #7, Issue #8)
+- Onboarding Screen mit Belt/Exp/Goal/Type + Validierung + Upsert
+- Settings: Live-i18n (DE/EN), Audio‑Feedback, Privacy/Legal/Logout
+- Home ContinueCard mit Hint oder Onboarding‑CTA
+- Router Redirects (Consent → Onboarding)
+- DB: user_profile + RLS + Constraints
+- i18n: Runtime Strings mit Safe Accessors
+- Services: DI, Persist‑First, Notifiers (Audio/Locale)
+- Tests: Router Redirects, Profile Validation
+- Lint: 0 Issues, Tests Green
+
 **Tasks:**
-1. Onboarding-Form: Belt, Erfahrung, Wochenziel, Zieltyp, optional Altersgruppe
-2. Speichern in `user_profile` (Supabase)
-3. Settings erweitert: Sprache (DE/EN), Consent-Toggle, Audio-Feedback, Logout, "Konto löschen" (UI)
-4. Home: Hero-Karte "Weiter machen"
+1. Onboarding-Form: Belt, Erfahrung, Wochenziel, Zieltyp, optional Altersgruppe ✅
+2. Speichern in `user_profile` (Supabase) ✅
+3. Settings erweitert: Sprache (DE/EN), Consent-Toggle, Audio-Feedback, Logout, "Konto löschen" (UI) ✅
+4. Home: Hero-Karte "Weiter machen" ✅
 
 **DoD:**
-- Onboarding ≤60 s; Antworten werden gespeichert
-- Settings ändert Sprache/Consent live
+- Onboarding ≤60 s; Antworten werden gespeichert ✅
+- Settings ändert Sprache/Consent live ✅
 
 ---
 
