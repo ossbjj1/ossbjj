@@ -43,7 +43,6 @@ void main() async {
       forceOnboarding = true;
     }
   }
-
   // Init Analytics only if consent granted
   await analyticsService.initIfAllowed(
     analyticsAllowed: consentState.analytics,
