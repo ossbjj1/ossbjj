@@ -143,9 +143,12 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Bottom nav should be visible on home (labels in nav bar)
-      final navBars = find.byType(InkWell);
-      expect(navBars, findsNWidgets(4)); // 4 nav items
+      // Bottom nav should be visible on home (icons in nav bar)
+      expect(find.byType(BottomNavigationBar), findsOneWidget);
+      expect(find.byIcon(Icons.home), findsOneWidget);
+      expect(find.byIcon(Icons.school), findsOneWidget);
+      expect(find.byIcon(Icons.bar_chart), findsOneWidget);
+      expect(find.byIcon(Icons.settings), findsOneWidget);
     });
   });
 
