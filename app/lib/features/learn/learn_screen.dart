@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/design_tokens/colors.dart';
-import '../../core/l10n/app_strings.dart';
+import '../../core/l10n/strings.dart';
 
 /// Learn Screen (Sprint 1 stub).
 ///
@@ -10,9 +10,11 @@ class LearnScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = StringsScope.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text(AppStrings.navTitleLearn),
+        title: Text(t.navTitleLearn),
         backgroundColor: DsColors.bgSurface,
       ),
       body: const Center(
