@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:go_router/go_router.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:oss/core/services/gating_service.dart';
@@ -10,6 +9,7 @@ import 'package:oss/core/services/progress_service.dart';
 import 'package:oss/features/home/continue_card.dart';
 import 'package:oss/core/l10n/strings.dart';
 
+import '../../helpers/router_test_helper.dart';
 import 'continue_card_test.mocks.dart';
 
 @GenerateMocks([GatingService, ProgressService])
@@ -23,8 +23,10 @@ void main() {
       mockProgressService = MockProgressService();
     });
 
-    Widget createTestWidget(
-        {ContinueHint? hint, Future<ContinueHint?>? hintFuture}) {
+    Widget createTestWidget({
+      ContinueHint? hint,
+      Future<ContinueHint?>? hintFuture,
+    }) {
       // If hintFuture is provided (for loading tests), use it directly
       // Otherwise mock with immediate result
       if (hintFuture != null) {
@@ -33,31 +35,13 @@ void main() {
         when(mockProgressService.loadLast()).thenAnswer((_) async => hint);
       }
 
-      // Use GoRouter with mock routes to avoid navigation errors
-      final router = GoRouter(
-        initialLocation: '/',
-        routes: [
-          GoRoute(
-            path: '/',
-            builder: (context, state) => Scaffold(
-              body: ContinueCard(
-                progressService: mockProgressService,
-                gatingService: mockGatingService,
-              ),
-            ),
+      final router = RouterTestHelper.createMockRouter(
+        homeBuilder: (context, state) => Scaffold(
+          body: ContinueCard(
+            progressService: mockProgressService,
+            gatingService: mockGatingService,
           ),
-          GoRoute(
-              path: '/onboarding',
-              builder: (context, state) =>
-                  const Scaffold(body: Text('Onboarding'))),
-          GoRoute(
-              path: '/step/:id',
-              builder: (context, state) => const Scaffold(body: Text('Step'))),
-          GoRoute(
-              path: '/paywall',
-              builder: (context, state) =>
-                  const Scaffold(body: Text('Paywall'))),
-        ],
+        ),
       );
 
       return StringsScope(
@@ -75,7 +59,7 @@ void main() {
       await tester.pumpWidget(createTestWidget(hintFuture: completer.future));
       await tester.pump(); // Start the future but don't complete it
 
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byKey(const Key('continue_card_loading')), findsOneWidget);
 
       // Clean up: complete the future to avoid hanging
       completer.complete(null);
@@ -86,6 +70,8 @@ void main() {
       await tester.pumpWidget(createTestWidget(hint: null));
       await tester.pumpAndSettle();
 
+      expect(
+          find.byKey(const Key('continue_card_onboarding_button')), findsOneWidget);
       expect(find.text('Start Onboarding'), findsOneWidget);
       expect(find.text('Save Profile'), findsOneWidget);
     });
@@ -96,10 +82,10 @@ void main() {
       await tester.pumpWidget(createTestWidget(hint: hint));
       await tester.pumpAndSettle();
 
+      expect(
+          find.byKey(const Key('continue_card_continue_button')), findsOneWidget);
       expect(find.text('Armbar Basics'), findsOneWidget);
-      // homeContinueTitle is "Continue", but we also have ctaContinue button with "Continue"
-      // So we expect 2 matches: title + button
-      expect(find.text('Continue'), findsNWidgets(2));
+      expect(find.text('Continue'), findsNWidgets(2)); // title + button
     });
 
     testWidgets('calls gating service and navigates to step when allowed',
@@ -114,8 +100,7 @@ void main() {
       await tester.pumpWidget(createTestWidget(hint: hint));
       await tester.pumpAndSettle();
 
-      // Tap the button (not the title) - use widgetWithText to disambiguate
-      await tester.tap(find.widgetWithText(ElevatedButton, 'Continue'));
+      await tester.tap(find.byKey(const Key('continue_card_continue_button')));
       await tester.pumpAndSettle();
 
       verify(mockGatingService.checkStepAccess('step-123')).called(1);
@@ -134,7 +119,7 @@ void main() {
       await tester.pumpWidget(createTestWidget(hint: hint));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.widgetWithText(ElevatedButton, 'Continue'));
+      await tester.tap(find.byKey(const Key('continue_card_continue_button')));
       await tester.pumpAndSettle();
 
       verify(mockGatingService.checkStepAccess('step-123')).called(1);
@@ -149,7 +134,7 @@ void main() {
       await tester.pumpWidget(createTestWidget(hint: hint));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.widgetWithText(ElevatedButton, 'Continue'));
+      await tester.tap(find.byKey(const Key('continue_card_continue_button')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
 

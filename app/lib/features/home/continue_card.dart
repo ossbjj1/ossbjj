@@ -68,6 +68,7 @@ class _ContinueCardState extends State<ContinueCard> {
               height: 120,
               child: Center(
                 child: CircularProgressIndicator(
+                  key: const Key('continue_card_loading'),
                   valueColor: AlwaysStoppedAnimation<Color>(
                     Theme.of(context).colorScheme.primary,
                   ),
@@ -110,6 +111,9 @@ class _ContinueCardState extends State<ContinueCard> {
                   ),
                 const SizedBox(height: DsSpacing.lg),
                 ElevatedButton(
+                  key: hint != null
+                      ? const Key('continue_card_continue_button')
+                      : const Key('continue_card_onboarding_button'),
                   onPressed: hint != null
                       ? () => _handleContinue(hint)
                       : () => context.go(AppRoutes.onboardingPath),
