@@ -1,10 +1,12 @@
 # gating_check_step_access
 
-Server-authoritative step access check for premium gating (Sprint 4.1 Production).
+Server-authoritative step access check for premium gating (Sprint 4.1
+Production).
 
 ## Purpose
 
-Replaces client-side entitlement checks with server-side validation. Prevents bypassing premium content via app binary manipulation.
+Replaces client-side entitlement checks with server-side validation.
+Prevents bypassing premium content via app binary manipulation.
 
 ## Configuration (ENV)
 
@@ -44,11 +46,13 @@ Content-Type: application/json
 ```
 
 ### Error Responses
+
 - `400`: `{"error": "bad_request"}` - Missing `techniqueStepId`
 - `401`: `{"allowed": false, "reason": "authRequired"}` - Invalid/missing JWT
 - `403`: `{"error": "origin_forbidden"}` - CORS origin not whitelisted
 - `404`: `{"error": "not_found"}` - Step ID doesn't exist
-- `429`: `{"error": "rate_limited", "retryAfter": 60}` - Rate limit exceeded (+ `Retry-After` header)
+- `429`: `{"error": "rate_limited", "retryAfter": 60}` - Rate limit exceeded (
+  `Retry-After` header)
 - `500`: `{"error": "server_error"}` - Internal error
 
 ## Testing
@@ -98,7 +102,9 @@ curl -H "Origin: https://evil.com" ...  # → 403
 
 ## Observability
 
-> Datenschutz: Niemals rohe User‑IDs an Sentry/PostHog senden. Nur pseudonyme IDs (z. B. hash(userId)). Telemetrie nur mit consent_analytics und bestehender DPA aktivieren.
+> Datenschutz: Niemals rohe User‑IDs an Sentry/PostHog senden. Nur pseudonyme
+> IDs (z. B. hash(userId)). Telemetrie nur mit consent_analytics und
+> bestehender DPA aktivieren.
 
 ### Structured Logs (JSON)
 
@@ -148,7 +154,8 @@ ORDER BY ts DESC LIMIT 100;
 - [ ] Set `RL_IP_RATE` (recommended: 60/m)
 - [ ] Set `LOG_LEVEL=warn` (reduce noise)
 - [ ] Monitor 429 rate via logs dashboard
-- [ ] Alert on 500 errors (Sentry/PostHog) — keine PII: nur pseudonyme IDs (hash(userId)); Telemetrie nur mit consent_analytics und bestehender DPA
+- [ ] Alert on 500 errors (Sentry/PostHog) — keine PII: nur pseudonyme IDs
+  (hash(userId)); Telemetrie nur mit consent_analytics und bestehender DPA
 
 ## Deployment
 
