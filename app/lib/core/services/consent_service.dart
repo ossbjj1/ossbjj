@@ -57,6 +57,17 @@ class ConsentService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_keyShown, true);
   }
+
+  /// Revoke all consent (DSGVO right to withdraw).
+  Future<void> revokeConsent() async {
+    _analytics = false;
+    _media = false;
+    _shown = false;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_keyAnalytics);
+    await prefs.remove(_keyMedia);
+    await prefs.remove(_keyShown);
+  }
 }
 
 /// Immutable consent state snapshot.

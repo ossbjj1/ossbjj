@@ -22,13 +22,15 @@ void main() {
 
     test('AuthResult factories work correctly', () {
       final success = AuthResult.success(user: null);
-      expect(success.isSuccess, false); // user is null
+      expect(success.isSuccess, true); // success flag set
       expect(success.isFailure, false);
+      expect(success.success, true);
 
       final failure = AuthResult.failure('test error');
       expect(failure.isSuccess, false);
       expect(failure.isFailure, true);
       expect(failure.error, 'test error');
+      expect(failure.success, false);
     });
   });
 }

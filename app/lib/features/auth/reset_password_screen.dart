@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/design_tokens/colors.dart';
 import '../../core/design_tokens/spacing.dart';
 import '../../core/design_tokens/typography.dart';
+import '../../core/l10n/app_strings.dart';
 import '../../core/strings/auth_strings.dart';
 import '../../core/services/auth_service.dart';
 
@@ -29,11 +30,22 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     super.dispose();
   }
 
+  bool _isValidEmail(String email) {
+    final emailRegex =
+        RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+    return emailRegex.hasMatch(email);
+  }
+
   Future<void> _handleReset() async {
     final email = _emailController.text.trim();
 
     if (email.isEmpty) {
-      _showError('Please enter your email');
+      _showError(AppStrings.ctaContinue);
+      return;
+    }
+
+    if (!_isValidEmail(email)) {
+      _showError(AuthStrings.errEmailInvalid);
       return;
     }
 
@@ -52,12 +64,13 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       }
     } catch (e) {
       setState(() => _loading = false);
-      _showError('Failed to send reset email. Please try again.');
+      _showError(AppStrings.resetErrorGeneric);
     }
   }
 
   void _showError(String message) {
     if (!mounted) return;
+    ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
     );
@@ -65,6 +78,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   void _showSuccess(String message) {
     if (!mounted) return;
+    ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),

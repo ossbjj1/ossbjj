@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import '../config/env.dart';
@@ -36,6 +37,7 @@ class AnalyticsService {
             options.tracesSampleRate = 0.1;
             options.beforeSend =
                 (event, hint) => _beforeSendSentry(event, hint: hint);
+            options.sendDefaultPii = false; // Disable default PII collection
           },
         );
         _logger.i('Sentry initialized');
@@ -56,7 +58,9 @@ class AnalyticsService {
   /// Track event (no-op if not initialized or consent not granted).
   void track(String event, [Map<String, Object?>? properties]) {
     if (!_initialized) {
-      _logger.d('Analytics not initialized, skipping track: $event');
+      if (kDebugMode) {
+        _logger.d('Analytics not initialized, skipping track');
+      }
       return;
     }
 
@@ -64,16 +68,20 @@ class AnalyticsService {
       // if (Env.hasPosthog) {
       //   Posthog().capture(eventName: event, properties: properties);
       // }
-      _logger.d('Tracked event: $event (MVP: PostHog disabled)');
+      if (kDebugMode) {
+        _logger.d('Tracked event: $event');
+      }
     } catch (e) {
-      _logger.w('Failed to track event: $event', error: e);
+      _logger.w('Failed to track event', error: e);
     }
   }
 
   /// Set user context (no-op if not initialized).
   void setUser({required String? id}) {
     if (!_initialized) {
-      _logger.d('Analytics not initialized, skipping setUser');
+      if (kDebugMode) {
+        _logger.d('Analytics not initialized, skipping setUser');
+      }
       return;
     }
 
@@ -86,7 +94,9 @@ class AnalyticsService {
       // if (Env.hasPosthog && id != null) {
       //   Posthog().identify(userId: id);
       // }
-      _logger.d('User context set: $id (MVP: PostHog disabled)');
+      if (kDebugMode) {
+        _logger.d('User context set');
+      }
     } catch (e) {
       _logger.w('Failed to set user context', error: e);
     }
@@ -94,10 +104,13 @@ class AnalyticsService {
 
   /// Sentry beforeSend hook: strip PII from events.
   SentryEvent? _beforeSendSentry(SentryEvent event, {Hint? hint}) {
-    // Strip email/phone/IP from breadcrumbs/contexts
+    // Strip all PII: email, phone, IP, username, id, name
     final sanitized = event.copyWith(
       user: event.user?.copyWith(
+        id: null,
         email: null,
+        username: null,
+        name: null,
         ipAddress: null,
       ),
     );

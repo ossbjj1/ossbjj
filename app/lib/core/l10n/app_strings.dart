@@ -48,4 +48,8 @@ class AppStrings {
   // Settings
   static const String settingsPrivacy = 'Privacy settings';
   static const String settingsLogout = 'Log out';
+
+  // Reset password
+  static const String resetErrorGeneric =
+      'Could not send reset email. Please try again.';
 }
