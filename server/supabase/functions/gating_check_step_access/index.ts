@@ -1,12 +1,13 @@
 // server/supabase/functions/gating_check_step_access/index.ts
-// Server-Authoritative Step Access Check (Sprint 4.1 Security Fix)
+// Server-Authoritative Step Access Check (Sprint 4.1 Production)
 //
 // Replaces client-side entitlement checks with server-side validation.
-// Prevents bypassing premium gating via app binary manipulation.
+// Production hardening: CORS whitelist, rate limiting, structured logging.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 type GatingReason = "free" | "premium" | "premiumRequired" | "authRequired";
+type Json = Record<string, unknown>;
 
 interface CheckAccessRequest {
   techniqueStepId: string;
@@ -17,16 +18,135 @@ interface CheckAccessResponse {
   reason: GatingReason;
 }
 
-serve(async (req) => {
-  const corsHeaders = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers":
-      "authorization, x-client-info, apikey, content-type",
-  };
+interface RateLimitConfig {
+  cap: number;
+  windowSeconds: number;
+}
 
-  // Handle CORS preflight
+// Helper: Consistent response format
+function resp(body: Json, status: number, headers: Record<string, string> = {}) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json", ...headers },
+  });
+}
+
+// Helper: Parse rate limit config (e.g., "30/m" -> {cap:30, window:60})
+function parseEnvRate(rateStr: string): RateLimitConfig {
+  const match = rateStr.match(/^(\d+)\/(m|h)$/);
+  if (!match) return { cap: 30, windowSeconds: 60 }; // Default 30/min
+  const cap = parseInt(match[1], 10);
+  const windowSeconds = match[2] === "m" ? 60 : 3600;
+  return { cap, windowSeconds };
+}
+
+// Helper: Upstash INCR + EXPIRE
+async function upstashIncr(
+  key: string,
+  ttlSeconds: number,
+): Promise<number | null> {
+  const url = Deno.env.get("UPSTASH_REDIS_REST_URL");
+  const token = Deno.env.get("UPSTASH_REDIS_REST_TOKEN");
+  if (!url || !token) return null; // Upstash not configured
+
+  try {
+    const incrResp = await fetch(`${url}/incr/${key}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const incrData = await incrResp.json();
+    const count = incrData.result as number;
+
+    if (count === 1) {
+      // First increment, set TTL
+      await fetch(`${url}/expire/${key}/${ttlSeconds}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    }
+    return count;
+  } catch (e) {
+    console.error("Upstash error:", e);
+    return null;
+  }
+}
+
+// Helper: Rate limit check
+async function checkRateLimit(
+  scopeKey: string,
+  config: RateLimitConfig,
+): Promise<{ ok: boolean; retryAfter?: number }> {
+  const count = await upstashIncr(scopeKey, config.windowSeconds);
+  if (count === null) {
+    // Upstash down, fail-open with warning
+    console.warn("Rate limiting unavailable, allowing request");
+    return { ok: true };
+  }
+
+  if (count > config.cap) {
+    const retryAfter = config.windowSeconds;
+    return { ok: false, retryAfter };
+  }
+
+  return { ok: true };
+}
+
+// Helper: Get origin for CORS
+function getOrigin(req: Request): string | null {
+  return req.headers.get("Origin");
+}
+
+// Helper: Get IP (Cloudflare/Deno Deploy)
+function getIp(req: Request): string {
+  return req.headers.get("CF-Connecting-IP") ||
+    req.headers.get("X-Forwarded-For")?.split(",")[0] ||
+    "unknown";
+}
+
+// Helper: CORS headers (dynamic origin)
+function getCorsHeaders(origin: string | null, allowedOrigins: Set<string>): Record<string, string> {
+  if (!origin || !allowedOrigins.has(origin)) {
+    return {}; // No CORS headers for disallowed origins
+  }
+  return {
+    "Access-Control-Allow-Origin": origin,
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Vary": "Origin",
+  };
+}
+
+// Helper: Structured logging
+function log(
+  event: string,
+  fields: Json,
+  level: "info" | "warn" | "error" = "info",
+) {
+  const logLevel = Deno.env.get("LOG_LEVEL") || "info";
+  const levels = { info: 0, warn: 1, error: 2 };
+  if (levels[level] < levels[logLevel as keyof typeof levels]) return;
+
+  console.log(JSON.stringify({ ts: new Date().toISOString(), event, level, ...fields }));
+}
+
+serve(async (req) => {
+  const reqId = crypto.randomUUID();
+  const t0 = Date.now();
+  const ip = getIp(req);
+  const origin = getOrigin(req);
+
+  // Parse CORS whitelist
+  const corsOriginsEnv = Deno.env.get("CORS_ALLOWED_ORIGINS") || "";
+  const allowedOrigins = new Set(corsOriginsEnv.split(",").map(o => o.trim()).filter(Boolean));
+  const corsHeaders = getCorsHeaders(origin, allowedOrigins);
+
+  // CORS preflight
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response("ok", { status: 204, headers: corsHeaders });
+  }
+
+  // Check origin (if configured)
+  if (corsOriginsEnv && origin && !allowedOrigins.has(origin)) {
+    log("origin_forbidden", { reqId, origin, ip }, "warn");
+    return resp({ error: "origin_forbidden" }, 403, corsHeaders);
   }
 
   try {
@@ -35,13 +155,8 @@ serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
 
     if (!authHeader) {
-      return new Response(
-        JSON.stringify({ allowed: false, reason: "authRequired" }),
-        {
-          status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
-      );
+      log("auth_required", { reqId, ip }, "warn");
+      return resp({ allowed: false, reason: "authRequired" }, 401, corsHeaders);
     }
 
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
@@ -51,28 +166,45 @@ serve(async (req) => {
     // 1. Verify JWT and get user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
-      return new Response(
-        JSON.stringify({ allowed: false, reason: "authRequired" }),
-        {
-          status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
+      log("auth_invalid", { reqId, ip, error: authError?.message }, "warn");
+      return resp({ allowed: false, reason: "authRequired" }, 401, corsHeaders);
+    }
+
+    // 2. Rate limiting (per user preferred, IP fallback)
+    const userRateConfig = parseEnvRate(Deno.env.get("RL_USER_RATE") || "30/m");
+    const ipRateConfig = parseEnvRate(Deno.env.get("RL_IP_RATE") || "60/m");
+    const epochMinute = Math.floor(Date.now() / 60000);
+    const userKey = `rl:gating_check:user:${user.id}:${epochMinute}`;
+    const ipKey = `rl:gating_check:ip:${ip}:${epochMinute}`;
+
+    const userRL = await checkRateLimit(userKey, userRateConfig);
+    if (!userRL.ok) {
+      log("rate_limited", { reqId, userId: user.id, scope: "user", retryAfter: userRL.retryAfter }, "warn");
+      return resp(
+        { error: "rate_limited", retryAfter: userRL.retryAfter },
+        429,
+        { ...corsHeaders, "Retry-After": String(userRL.retryAfter) },
       );
     }
 
-    // 2. Parse request body
+    const ipRL = await checkRateLimit(ipKey, ipRateConfig);
+    if (!ipRL.ok) {
+      log("rate_limited", { reqId, ip, scope: "ip", retryAfter: ipRL.retryAfter }, "warn");
+      return resp(
+        { error: "rate_limited", retryAfter: ipRL.retryAfter },
+        429,
+        { ...corsHeaders, "Retry-After": String(ipRL.retryAfter) },
+      );
+    }
+
+    // 3. Parse request body
     const { techniqueStepId }: CheckAccessRequest = await req.json();
     if (!techniqueStepId) {
-      return new Response(
-        JSON.stringify({ error: "technique_step_id required" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
-      );
+      log("bad_request", { reqId, userId: user.id }, "warn");
+      return resp({ error: "bad_request" }, 400, corsHeaders);
     }
 
-    // 3. Fetch step index from technique_step table (server-side query)
+    // 4. Fetch step index from technique_step table (server-side query)
     const { data: stepData, error: stepError } = await supabase
       .from("technique_step")
       .select("idx")
@@ -80,27 +212,28 @@ serve(async (req) => {
       .single();
 
     if (stepError || !stepData) {
-      return new Response(
-        JSON.stringify({ error: "step_not_found" }),
-        {
-          status: 404,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
-      );
+      log("step_not_found", { reqId, userId: user.id, techniqueStepId }, "warn");
+      return resp({ error: "not_found" }, 404, corsHeaders);
     }
 
     const idx = stepData.idx as number;
 
-    // 4. Free tier: idx 0-1 (steps 1-2)
+    // 5. Free tier: idx 0-1 (steps 1-2)
     if (idx <= 1) {
       const response: CheckAccessResponse = { allowed: true, reason: "free" };
-      return new Response(JSON.stringify(response), {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      const durationMs = Date.now() - t0;
+      log("gating_check_step_access", {
+        reqId,
+        userId: user.id,
+        techniqueStepId,
+        idx,
+        decision: { allowed: true, reason: "free" },
+        durationMs,
       });
+      return resp(response, 200, corsHeaders);
     }
 
-    // 5. Premium required for idx >= 2 (step 3+)
+    // 6. Premium required for idx >= 2 (step 3+)
     // Fetch entitlement from user_profile (server-side, RLS-protected)
     const { data: profileData, error: profileError } = await supabase
       .from("user_profile")
@@ -109,46 +242,30 @@ serve(async (req) => {
       .maybeSingle();
 
     if (profileError) {
-      console.error("Profile fetch error:", profileError);
-      return new Response(
-        JSON.stringify({ error: "server_error" }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
-      );
+      log("profile_fetch_error", { reqId, userId: user.id, error: profileError.message }, "error");
+      return resp({ error: "server_error" }, 500, corsHeaders);
     }
 
     const entitlement = (profileData?.entitlement as string) ?? "free";
+    const allowed = entitlement === "premium" || entitlement === "pro";
+    const reason: GatingReason = allowed ? "premium" : "premiumRequired";
+    const response: CheckAccessResponse = { allowed, reason };
 
-    if (entitlement === "premium" || entitlement === "pro") {
-      const response: CheckAccessResponse = {
-        allowed: true,
-        reason: "premium",
-      };
-      return new Response(JSON.stringify(response), {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // 6. Access denied: premium required
-    const response: CheckAccessResponse = {
-      allowed: false,
-      reason: "premiumRequired",
-    };
-    return new Response(JSON.stringify(response), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    const durationMs = Date.now() - t0;
+    log("gating_check_step_access", {
+      reqId,
+      userId: user.id,
+      techniqueStepId,
+      idx,
+      entitlement,
+      decision: { allowed, reason },
+      durationMs,
     });
+
+    return resp(response, 200, corsHeaders);
   } catch (error) {
-    console.error("Unexpected error:", error);
-    return new Response(
-      JSON.stringify({ error: "server_error", detail: String(error) }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      },
-    );
+    const durationMs = Date.now() - t0;
+    log("unexpected_error", { reqId, ip, error: String(error), durationMs }, "error");
+    return resp({ error: "server_error", detail: String(error) }, 500);
   }
 });
