@@ -1,3 +1,4 @@
+<!-- deno-fmt-ignore-file -->
 # gating_check_step_access
 
 Server-authoritative step access check for premium gating (Sprint 4.1
