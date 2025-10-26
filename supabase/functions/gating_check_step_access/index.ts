@@ -196,8 +196,16 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
     if (!supabaseUrl || !supabaseAnonKey) {
-      log("server_config_error", { reqId, ip, error: "SUPABASE_URL or SUPABASE_ANON_KEY missing" }, "error");
-      return resp({ error: "server_error", detail: "server misconfigured" }, 500, corsHeaders);
+      log(
+        "server_config_error",
+        { reqId, ip, error: "SUPABASE_URL or SUPABASE_ANON_KEY missing" },
+        "error",
+      );
+      return resp(
+        { error: "server_error", detail: "server misconfigured" },
+        500,
+        corsHeaders,
+      );
     }
     const authHeader = req.headers.get("Authorization");
 
@@ -273,7 +281,7 @@ serve(async (req) => {
       return resp({ error: "bad_request" }, 400, corsHeaders);
     }
     const techniqueStepId = (body as Record<string, unknown>)
-      ?.['techniqueStepId'];
+      ?.["techniqueStepId"];
     if (typeof techniqueStepId !== "string" || techniqueStepId.length === 0) {
       log("bad_request", {
         reqId,
