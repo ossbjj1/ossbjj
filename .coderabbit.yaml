@@ -11,11 +11,25 @@ reviews:
   
   # OSS-specific: enforce WARP.md governance
   path_filters:
+    # Always exclude noise and build artifacts
     - "!**/*.lock"
     - "!**/.DS_Store"
     - "!**/supabase/.temp/**"
     - "!**/.dart_tool/**"
     - "!**/build/**"
+
+    # Exclude non-target platforms for MVP (iOS-first). Avoid false-positive clang headers.
+    - "!app/windows/**"
+    - "!app/linux/**"
+    - "!app/macos/**"
+    - "!web/**"
+
+    # Generated or build-time created headers (Flutter generates these on build)
+    - "!app/ios/Runner/GeneratedPluginRegistrant.*"
+
+    # Reduce noise from long-form docs grammar in early sprints
+    - "!docs/privacy/reviews/**"
+    - "!docs/SETUP_BRANCH_PROTECTION.md"
   
   # OSS-specific governance checks
   pre_merge_checks:
