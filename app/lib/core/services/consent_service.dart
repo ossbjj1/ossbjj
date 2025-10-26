@@ -103,6 +103,7 @@ class ConsentService {
 
   /// Set analytics consent on server (UPDATE user_profile).
   /// Sprint 4: Write to server, then sync local.
+  /// Ensures profile row exists first, validates response, mirrors locally on success.
   Future<void> setServerAnalytics(bool value) async {
     final user = Supabase.instance.client.auth.currentUser;
     if (user == null) {
@@ -110,21 +111,41 @@ class ConsentService {
     }
 
     try {
-      await Supabase.instance.client
+      // Ensure profile row exists first (idempotent)
+      await _ensureUserProfile();
+
+      // Update and check response (expect ≥1 row affected)
+      final response = await Supabase.instance.client
           .from('user_profile')
-          .update({'consent_analytics': value}).eq('user_id', user.id);
+          .update({'consent_analytics': value})
+          .eq('user_id', user.id)
+          .select();
+
+      // Validate: response should contain the updated row
+      if (response.isEmpty) {
+        throw Exception('Server consent UPDATE affected no rows (row may have been deleted)');
+      }
+
       _logger.i('Server consent updated: $value');
-      await setAnalytics(value); // Mirror locally
+      // Mirror locally only after confirmed server write
+      await setAnalytics(value);
     } catch (e, stackTrace) {
       _logger.e('Set server consent failed', error: e, stackTrace: stackTrace);
       rethrow;
     }
   }
-
   /// Sync analytics consent from server to local (login hook).
   /// Server is SoT; local is mirror.
   /// Sprint 4: Call on app start after auth.
+  /// Auth guard: returns early if user not authenticated.
   Future<void> syncAnalyticsFromServer() async {
+    // Auth guard: only sync if user is logged in
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) {
+      _logger.w('Consent sync skipped: user not authenticated');
+      return; // No-op; local value remains as fallback
+    }
+
     try {
       // Ensure profile row exists (idempotent)
       await _ensureUserProfile();

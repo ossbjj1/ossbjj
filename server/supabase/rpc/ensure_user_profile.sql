@@ -2,11 +2,13 @@
 -- Sprint 4: Idempotent insert for user_profile row.
 -- Creates profile row if missing; no-op if exists.
 -- Used by ConsentService.syncAnalyticsFromServer().
+-- SECURITY DEFINER with explicit search_path hardening.
 
 CREATE OR REPLACE FUNCTION public.ensure_user_profile()
 RETURNS boolean
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public, pg_catalog
 AS $$
 BEGIN
   INSERT INTO public.user_profile (user_id)

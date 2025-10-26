@@ -111,7 +111,7 @@ class _ContinueCardState extends State<ContinueCard> {
                 const SizedBox(height: DsSpacing.lg),
                 ElevatedButton(
                   onPressed: hint != null
-                      ? () => _handleContinue(context, hint)
+                      ? () => _handleContinue(hint)
                       : () => context.go(AppRoutes.onboardingPath),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.primary,
@@ -130,7 +130,8 @@ class _ContinueCardState extends State<ContinueCard> {
   }
 
   /// Handle continue button press (Sprint 4: gating + navigation).
-  Future<void> _handleContinue(BuildContext context, ContinueHint hint) async {
+  /// Uses State's context property to avoid use_build_context_synchronously warnings.
+  Future<void> _handleContinue(ContinueHint hint) async {
     try {
       final access = await widget.gatingService.checkStepAccess(hint.stepId);
 

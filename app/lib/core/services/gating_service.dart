@@ -65,7 +65,9 @@ class GatingService {
   }
 
   /// Complete step (idempotent).
-  /// MVP: Direct DB insert; Edge Fn + rate-limit later.
+  /// Sprint 4 MVP: Direct DB upsert with server-side authorization check.
+  /// TODO Sprint 4.1: Replace with Edge Function call (POST /gating/step-complete)
+  /// for server-authoritative validation, rate limiting, and audit logging.
   Future<CompleteResult> completeStep(String techniqueStepId) async {
     final user = Supabase.instance.client.auth.currentUser;
     if (user == null) {
@@ -73,7 +75,7 @@ class GatingService {
     }
 
     try {
-      // Check access first
+      // Check access first (server-side validation)
       final access = await checkStepAccess(techniqueStepId);
       if (!access.allowed) {
         return CompleteResult(
@@ -83,19 +85,32 @@ class GatingService {
         );
       }
 
-      // Insert progress (idempotent via PK)
-      final response =
-          await Supabase.instance.client.from('user_step_progress').upsert({
+      final now = DateTime.now().toUtc().toIso8601String();
+
+      // Insert/update progress (idempotent via PK upsert)
+      final response = await Supabase.instance.client
+          .from('user_step_progress')
+          .upsert({
         'user_id': user.id,
         'technique_step_id': techniqueStepId,
-        'done_at': DateTime.now().toUtc().toIso8601String(),
+        'done_at': now,
       }).select();
 
-      _logger.i('Step completed: $techniqueStepId');
+      if (response.isEmpty) {
+        throw Exception('upsert returned no rows; db error');
+      }
+
+      // Detect idempotency: if done_at already exists (from prior call), it's idempotent
+      final row = response.first as Map<String, dynamic>;
+      final isDone = row['done_at'] != null;
+      // If done_at was already set and differs from now, this is a re-completion
+      final isIdempotent = isDone && row['done_at'] != now;
+
+      _logger.i('Step completed: $techniqueStepId (idempotent: $isIdempotent)');
 
       return CompleteResult(
         success: true,
-        idempotent: response.isEmpty, // Empty = conflict (already exists)
+        idempotent: isIdempotent,
         message: 'Step completed',
       );
     } catch (e, stackTrace) {

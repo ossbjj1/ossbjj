@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:logger/logger.dart';
 import 'theme/app_theme.dart';
 import 'router.dart';
 import 'core/services/consent_service.dart';
@@ -14,6 +15,9 @@ import 'core/l10n/strings.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize logger for startup errors
+  final logger = Logger();
 
   // Initialize services (Sprint 3 + Sprint 4)
   final consentService = ConsentService();
@@ -41,9 +45,9 @@ void main() async {
   if (authService.currentUser != null) {
     try {
       await consentService.syncAnalyticsFromServer();
-    } catch (e) {
+    } catch (e, stackTrace) {
       // Log but continue; local value is fallback
-      debugPrint('Consent sync failed: $e');
+      logger.e('Consent sync failed during startup', error: e, stackTrace: stackTrace);
     }
   }
 
