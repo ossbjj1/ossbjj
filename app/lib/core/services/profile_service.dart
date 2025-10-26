@@ -9,13 +9,12 @@ class ProfileService {
 
   /// Fetch current user's profile.
   Future<UserProfile?> fetch() async {
-    try {
-      final user = Supabase.instance.client.auth.currentUser;
-      if (user == null) {
-        _logger.w('Cannot fetch profile: user not logged in');
-        return null;
-      }
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) {
+      throw Exception('Cannot fetch profile: user not logged in');
+    }
 
+    try {
       final response = await Supabase.instance.client
           .from('user_profile')
           .select()
@@ -29,7 +28,7 @@ class ProfileService {
       return UserProfile.fromJson(response);
     } catch (e, stackTrace) {
       _logger.e('Profile fetch failed', error: e, stackTrace: stackTrace);
-      return null;
+      rethrow;
     }
   }
 
