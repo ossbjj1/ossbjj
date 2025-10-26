@@ -8,7 +8,6 @@ import 'package:oss/core/services/gating_service.dart';
 import 'package:oss/features/step_player/step_player_screen.dart';
 import 'package:oss/core/l10n/strings.dart';
 
-import '../../helpers/router_test_helper.dart';
 import 'step_player_screen_test.mocks.dart';
 
 class MockNavigatorObserver extends Mock implements NavigatorObserver {}

@@ -35,7 +35,7 @@ class GatingService {
         return const GatingAccess(
             allowed: false, reason: GatingReason.authRequired);
       }
-      final data = Map<String, dynamic>.from(raw as Map);
+      final data = Map<String, dynamic>.from(raw);
 
       final allowedVal = data['allowed'];
       final reasonVal = data['reason'];
@@ -70,9 +70,8 @@ class GatingService {
   }
 
   /// Complete step (idempotent).
-  /// Sprint 4 MVP: Direct DB upsert with server-side authorization check.
-  /// TODO Sprint 4.1: Replace with Edge Function call (POST /gating/step-complete)
-  /// for server-authoritative validation, rate limiting, and audit logging.
+  /// Sprint 4.1: Server-authoritative completion via RPC mark_step_complete.
+  /// Prevents duplicate completions via PK conflict; returns {success,idempotent,message}.
   Future<CompleteResult> completeStep(String techniqueStepId) async {
     final user = Supabase.instance.client.auth.currentUser;
     if (user == null) {
@@ -90,32 +89,23 @@ class GatingService {
         );
       }
 
-      final now = DateTime.now().toUtc().toIso8601String();
+      // Call RPC mark_step_complete (idempotent via PK conflict)
+      final response = await Supabase.instance.client
+          .rpc('mark_step_complete', params: {
+        'p_technique_step_id': techniqueStepId,
+      }).single();
 
-      // Insert/update progress (idempotent via PK upsert)
-      final response =
-          await Supabase.instance.client.from('user_step_progress').upsert({
-        'user_id': user.id,
-        'technique_step_id': techniqueStepId,
-        'done_at': now,
-      }).select();
+      final success = response['success'] as bool? ?? false;
+      final idempotent = response['idempotent'] as bool? ?? false;
+      final message = response['message'] as String? ?? 'unknown';
 
-      if (response.isEmpty) {
-        throw Exception('upsert returned no rows; db error');
-      }
-
-      // Detect idempotency: if done_at already exists (from prior call), it's idempotent
-      final row = response.first as Map<String, dynamic>;
-      final isDone = row['done_at'] != null;
-      // If done_at was already set and differs from now, this is a re-completion
-      final isIdempotent = isDone && row['done_at'] != now;
-
-      _logger.i('Step completed: $techniqueStepId (idempotent: $isIdempotent)');
+      _logger.i(
+          'Step completed: $techniqueStepId (success: $success, idempotent: $idempotent)');
 
       return CompleteResult(
-        success: true,
-        idempotent: isIdempotent,
-        message: 'Step completed',
+        success: success,
+        idempotent: idempotent,
+        message: message,
       );
     } catch (e, stackTrace) {
       _logger.e('completeStep failed', error: e, stackTrace: stackTrace);
