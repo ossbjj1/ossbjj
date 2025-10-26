@@ -9,65 +9,49 @@ class GatingService {
 
   final Logger _logger;
 
-  /// Check if user can access step.
-  /// MVP: Steps 1-2 free; step 3+ requires premium.
-  ///
-  /// ⚠️ SECURITY TODO (Sprint 4.1): This method performs client-side entitlement
-  /// checks which can be bypassed. Must be refactored to call server-side
-  /// Edge Function POST /gating/check-step-access for authoritative validation.
-  /// See ADR-002 and WARP.md security guidelines.
-  @Deprecated(
-      'Client-side gating is insecure. Migrate to Edge Function in Sprint 4.1')
+  /// Check if user can access step (server-authoritative).
+  /// Sprint 4.1: Calls Edge Function for secure, server-side entitlement validation.
+  /// Cannot be bypassed via app binary manipulation.
   Future<GatingAccess> checkStepAccess(String techniqueStepId) async {
-    final user = Supabase.instance.client.auth.currentUser;
-    if (user == null) {
-      return const GatingAccess(
-        allowed: false,
-        reason: GatingReason.authRequired,
-      );
-    }
-
     try {
-      // Fetch step index (0-based)
-      final stepResponse = await Supabase.instance.client
-          .from('technique_step')
-          .select('idx')
-          .eq('id', techniqueStepId)
-          .single();
-
-      final idx = (stepResponse['idx'] as num).toInt();
-
-      // Free: idx 0-1 (steps 1-2)
-      if (idx <= 1) {
-        return const GatingAccess(
-          allowed: true,
-          reason: GatingReason.free,
-        );
-      }
-
-      // Premium required for idx >= 2 (step 3+)
-      final profileResponse = await Supabase.instance.client
-          .from('user_profile')
-          .select('entitlement')
-          .eq('user_id', user.id)
-          .maybeSingle();
-
-      final entitlement = profileResponse?['entitlement'] as String? ?? 'free';
-
-      if (entitlement == 'premium') {
-        return const GatingAccess(
-          allowed: true,
-          reason: GatingReason.premium,
-        );
-      }
-
-      return const GatingAccess(
-        allowed: false,
-        reason: GatingReason.premiumRequired,
+      final response = await Supabase.instance.client.functions.invoke(
+        'gating_check_step_access',
+        body: {'techniqueStepId': techniqueStepId},
       );
+
+      if (response.status != 200) {
+        throw Exception(
+            'Edge Function failed: ${response.status} ${response.data}');
+      }
+
+      final data = response.data as Map<String, dynamic>;
+      final allowed = data['allowed'] as bool;
+      final reasonStr = data['reason'] as String;
+
+      final reason = _parseGatingReason(reasonStr);
+
+      return GatingAccess(allowed: allowed, reason: reason);
     } catch (e, stackTrace) {
       _logger.e('checkStepAccess failed', error: e, stackTrace: stackTrace);
       rethrow;
+    }
+  }
+
+  /// Parse gating reason string from Edge Function response.
+  GatingReason _parseGatingReason(String reasonStr) {
+    switch (reasonStr) {
+      case 'free':
+        return GatingReason.free;
+      case 'premium':
+        return GatingReason.premium;
+      case 'premiumRequired':
+        return GatingReason.premiumRequired;
+      case 'authRequired':
+        return GatingReason.authRequired;
+      default:
+        _logger
+            .w('Unknown gating reason: $reasonStr, defaulting to authRequired');
+        return GatingReason.authRequired;
     }
   }
 
