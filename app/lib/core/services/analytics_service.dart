@@ -34,7 +34,8 @@ class AnalyticsService {
           (options) {
             options.dsn = Env.sentryDsn;
             options.tracesSampleRate = 0.1;
-            options.beforeSend = (event, hint) => _beforeSendSentry(event, hint: hint);
+            options.beforeSend =
+                (event, hint) => _beforeSendSentry(event, hint: hint);
           },
         );
         _logger.i('Sentry initialized');
