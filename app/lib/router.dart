@@ -1,219 +1,119 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'core/navigation/routes.dart';
+import 'core/widgets/app_bottom_nav.dart';
+import 'core/design_tokens/colors.dart';
+import 'features/home/home_screen.dart';
+import 'features/learn/learn_screen.dart';
+import 'features/stats/stats_screen.dart';
+import 'features/settings/settings_screen.dart';
+import 'features/consent/consent_modal.dart';
+import 'features/paywall/paywall_modal.dart';
 
-/// Main router configuration for OSS app.
+/// Main router configuration for OSS app (Sprint 1).
 ///
-/// Routes:
-/// - `/` → HomeScreen (S1)
-/// - `/learn` → LearnScreen (S1)
-/// - `/stats` → StatsScreen (S1)
-/// - `/settings` → SettingsScreen (S1)
-/// - `/technique/:id` → TechniqueScreen (S5)
-/// - `/step/:id` → StepPlayerScreen (S5)
-/// - `/paywall` → PaywallScreen (S8, full-screen modal)
-/// - `/consent` → ConsentScreen (S2, full-screen modal)
-/// - `/onboarding` → OnboardingScreen (S3, full-screen modal)
+/// Shell routes (with bottom nav): Home, Learn, Stats, Settings.
+/// Modal routes (fullscreen, no bottom nav): Consent, Paywall.
+/// Future routes (Sprint 5+): Technique, Step Player, Onboarding.
 final GoRouter appRouter = GoRouter(
+  initialLocation: AppRoutes.homePath,
   routes: [
     ShellRoute(
-      builder: (context, state, child) => Scaffold(
-        body: child,
-        bottomNavigationBar: _buildBottomNav(context),
-      ),
+      builder: (context, state, child) {
+        final location = state.matchedLocation;
+        final showNav = !AppRoutes.hideBottomNavRoutes
+            .any((route) => location.startsWith(route));
+        return Scaffold(
+          body: child,
+          bottomNavigationBar:
+              showNav ? AppBottomNav(currentLocation: location) : null,
+        );
+      },
       routes: [
         GoRoute(
-          path: '/',
-          name: 'home',
-          builder: (context, state) => const _HomeScreenStub(),
+          path: AppRoutes.homePath,
+          name: AppRoutes.homeName,
+          builder: (context, state) => const HomeScreen(),
         ),
         GoRoute(
-          path: '/learn',
-          name: 'learn',
-          builder: (context, state) => const _LearnScreenStub(),
+          path: AppRoutes.learnPath,
+          name: AppRoutes.learnName,
+          builder: (context, state) => const LearnScreen(),
         ),
         GoRoute(
-          path: '/stats',
-          name: 'stats',
-          builder: (context, state) => const _StatsScreenStub(),
+          path: AppRoutes.statsPath,
+          name: AppRoutes.statsName,
+          builder: (context, state) => const StatsScreen(),
         ),
         GoRoute(
-          path: '/settings',
-          name: 'settings',
-          builder: (context, state) => const _SettingsScreenStub(),
+          path: AppRoutes.settingsPath,
+          name: AppRoutes.settingsName,
+          builder: (context, state) => const SettingsScreen(),
         ),
       ],
     ),
+    // Modal routes (fullscreen)
     GoRoute(
-      path: '/technique/:id',
-      name: 'technique',
-      builder: (context, state) => const _TechniqueScreenStub(),
+      path: AppRoutes.consentPath,
+      name: AppRoutes.consentName,
+      pageBuilder: (context, state) => const MaterialPage(
+        fullscreenDialog: true,
+        child: ConsentModal(),
+      ),
     ),
     GoRoute(
-      path: '/step/:id',
-      name: 'step',
-      builder: (context, state) => const _StepPlayerScreenStub(),
+      path: AppRoutes.paywallPath,
+      name: AppRoutes.paywallName,
+      pageBuilder: (context, state) => const MaterialPage(
+        fullscreenDialog: true,
+        child: PaywallModal(),
+      ),
+    ),
+    // Future routes (Sprint 5+) - stubs for hide-rule testing
+    GoRoute(
+      path: AppRoutes.techniquePath,
+      name: AppRoutes.techniqueName,
+      builder: (context, state) => const _PlaceholderScreen(
+        title: 'Technique (Sprint 5)',
+      ),
     ),
     GoRoute(
-      path: '/paywall',
-      name: 'paywall',
-      builder: (context, state) => const _PaywallScreenStub(),
+      path: AppRoutes.stepPath,
+      name: AppRoutes.stepName,
+      builder: (context, state) => const _PlaceholderScreen(
+        title: 'Step Player (Sprint 5)',
+      ),
     ),
     GoRoute(
-      path: '/consent',
-      name: 'consent',
-      builder: (context, state) => const _ConsentScreenStub(),
-    ),
-    GoRoute(
-      path: '/onboarding',
-      name: 'onboarding',
-      builder: (context, state) => const _OnboardingScreenStub(),
+      path: AppRoutes.onboardingPath,
+      name: AppRoutes.onboardingName,
+      builder: (context, state) => const _PlaceholderScreen(
+        title: 'Onboarding (Sprint 3)',
+      ),
     ),
   ],
 );
 
-// Routes where bottom nav should be hidden (detail/modal screens)
-const Set<String> _hideBottomNavRoutes = {
-  '/technique/',
-  '/step/',
-  '/paywall',
-  '/consent',
-  '/onboarding',
-};
+/// Minimal placeholder for future routes (Sprint 3+).
+class _PlaceholderScreen extends StatelessWidget {
+  const _PlaceholderScreen({required this.title});
 
-Widget? _buildBottomNav(BuildContext context) {
-  final matchedLocation = GoRouterState.of(context).matchedLocation;
-  // Hide bottom nav on detail/modal routes using exact/prefix matching
-  if (_hideBottomNavRoutes.any((route) => matchedLocation.startsWith(route))) {
-    return null;
-  }
-  return Container(
-    color: const Color(
-        0xFF121212), // Use design token from DsColors (dark surface)
-    child: Row(
-      children: [
-        _NavItem(label: 'Home', route: '/', currentLocation: matchedLocation),
-        _NavItem(
-            label: 'Learn', route: '/learn', currentLocation: matchedLocation),
-        _NavItem(
-            label: 'Stats', route: '/stats', currentLocation: matchedLocation),
-        _NavItem(
-            label: 'Settings',
-            route: '/settings',
-            currentLocation: matchedLocation),
-      ],
-    ),
-  );
-}
-
-class _NavItem extends StatelessWidget {
-  const _NavItem({
-    required this.label,
-    required this.route,
-    required this.currentLocation,
-  });
-
-  final String label;
-  final String route;
-  final String currentLocation;
+  final String title;
 
   @override
   Widget build(BuildContext context) {
-    final isActive = currentLocation == route;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => context.go(route),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          color: isActive ? Colors.red : transparent,
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: isActive ? Colors.white : Colors.grey,
-              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-            ),
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(title),
+        backgroundColor: DsColors.bgSurface,
+      ),
+      body: Center(
+        child: Text(
+          '$title\n(Placeholder)',
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 16, color: DsColors.textSecondary),
         ),
       ),
     );
   }
-}
-
-const transparent = Color.fromARGB(0, 0, 0, 0);
-
-// Sprint 1 Stubs
-class _HomeScreenStub extends StatelessWidget {
-  const _HomeScreenStub();
-  @override
-  Widget build(BuildContext context) => const Scaffold(
-        body: Center(child: Text('Home (Sprint 1)')),
-      );
-}
-
-class _LearnScreenStub extends StatelessWidget {
-  const _LearnScreenStub();
-  @override
-  Widget build(BuildContext context) => const Scaffold(
-        body: Center(child: Text('Learn (Sprint 1)')),
-      );
-}
-
-class _StatsScreenStub extends StatelessWidget {
-  const _StatsScreenStub();
-  @override
-  Widget build(BuildContext context) => const Scaffold(
-        body: Center(child: Text('Stats (Sprint 1)')),
-      );
-}
-
-class _SettingsScreenStub extends StatelessWidget {
-  const _SettingsScreenStub();
-  @override
-  Widget build(BuildContext context) => const Scaffold(
-        body: Center(child: Text('Settings (Sprint 1)')),
-      );
-}
-
-// Sprint 5+ Stubs
-class _TechniqueScreenStub extends StatelessWidget {
-  const _TechniqueScreenStub();
-  @override
-  Widget build(BuildContext context) => const Scaffold(
-        body: Center(child: Text('Technique (Sprint 5)')),
-      );
-}
-
-class _StepPlayerScreenStub extends StatelessWidget {
-  const _StepPlayerScreenStub();
-  @override
-  Widget build(BuildContext context) => const Scaffold(
-        body: Center(child: Text('Step Player (Sprint 5)')),
-      );
-}
-
-// Sprint 2+ Stubs
-class _ConsentScreenStub extends StatelessWidget {
-  const _ConsentScreenStub();
-  @override
-  Widget build(BuildContext context) => const Scaffold(
-        body: Center(child: Text('Consent (Sprint 2)')),
-      );
-}
-
-// Sprint 3+ Stubs
-class _OnboardingScreenStub extends StatelessWidget {
-  const _OnboardingScreenStub();
-  @override
-  Widget build(BuildContext context) => const Scaffold(
-        body: Center(child: Text('Onboarding (Sprint 3)')),
-      );
-}
-
-// Sprint 8 Stubs
-class _PaywallScreenStub extends StatelessWidget {
-  const _PaywallScreenStub();
-  @override
-  Widget build(BuildContext context) => const Scaffold(
-        body: Center(child: Text('Paywall (Sprint 8)')),
-      );
 }
