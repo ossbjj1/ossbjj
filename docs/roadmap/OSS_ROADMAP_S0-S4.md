@@ -91,11 +91,11 @@
 **Ziel:** Strukturierter Inhalt, sichtbares Lernen.
 
 **Tasks:**
-1. Supabase Migrations: `user_profile`, `technique`, `technique_step`, `user_step_progress`
+1. Supabase Migrations: `user_profile`, `technique`, `technique_step`, `user_step_progress` — ✅ Done
 2. `seeds/techniques.json` (20 Techniken) + `seeds/steps.json` (100 Steps) – DE/EN Titel
 3. Learn-Screen (`/learn`): Kategorien-Grid → Technikliste je Kategorie
 4. Home-"Weiter machen": Client-Heuristik (erster nicht erledigter Step)
 
-**DoD:**
-- Kategorien und Techniklisten laden schnell
-- "Weiter machen" zeigt plausiblen nächsten Step
+**DoD (aktueller Status):**
+- Kategorien und Techniklisten laden schnell — ⏳ Open (Seeds/Screen fehlen)
+- "Weiter machen" zeigt plausiblen nächsten Step — ⏳ Open (Heuristik fehlt)
