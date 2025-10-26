@@ -8,16 +8,16 @@ Replaces client-side entitlement checks with server-side validation. Prevents by
 
 ## Configuration (ENV)
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `CORS_ALLOWED_ORIGINS` | `""` | Comma-separated origins (e.g., `https://app.example.com,capacitor://localhost`). Empty = dev‑mode allow‑all (`*`) via dynamic CORS. |
-| `RL_USER_RATE` | `"30/m"` | Rate limit per user (format: `{num}/{m\|h}`). |
-| `RL_IP_RATE` | `"60/m"` | Rate limit per IP (fallback). |
-| `UPSTASH_REDIS_REST_URL` | - | Upstash Redis REST API URL (required for rate limiting). |
-| `UPSTASH_REDIS_REST_TOKEN` | - | Upstash Redis token. |
-| `LOG_LEVEL` | `"info"` | Log level (`info`, `warn`, `error`). |
-| `SUPABASE_URL` | - | Supabase project URL (auto-injected). |
-| `SUPABASE_ANON_KEY` | - | Supabase anon key (auto-injected). |
+| Variable                   | Default | Description                                                                                                                          |
+| -------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `CORS_ALLOWED_ORIGINS`     | `""`    | Comma-separated origins (e.g., `https://app.example.com,capacitor://localhost`). Empty = dev‑mode allow‑all (`*`) via dynamic CORS. |
+| `RL_USER_RATE`             | `"30/m"` | Rate limit per user (format: `{num}/{m\|h}`).                                                                                        |
+| `RL_IP_RATE`               | `"60/m"` | Rate limit per IP (fallback).                                                                                                        |
+| `UPSTASH_REDIS_REST_URL`   | -       | Upstash Redis REST API URL (required for rate limiting).                                                                             |
+| `UPSTASH_REDIS_REST_TOKEN` | -       | Upstash Redis token.                                                                                                                 |
+| `LOG_LEVEL`                | `"info"` | Log level (`info`, `warn`, `error`).                                                                                                 |
+| `SUPABASE_URL`             | -       | Supabase project URL (auto-injected).                                                                                                |
+| `SUPABASE_ANON_KEY`        | -       | Supabase anon key (auto-injected).                                                                                                   |
 
 ## API Contract
 
@@ -41,7 +41,6 @@ Content-Type: application/json
   "allowed": true,
   "reason": "free" | "premium" | "premiumRequired" | "authRequired"
 }
-```
 ```
 
 ### Error Responses
@@ -102,6 +101,7 @@ curl -H "Origin: https://evil.com" ...  # → 403
 > Datenschutz: Niemals rohe User‑IDs an Sentry/PostHog senden. Nur pseudonyme IDs (z. B. hash(userId)). Telemetrie nur mit consent_analytics und bestehender DPA aktivieren.
 
 ### Structured Logs (JSON)
+
 All logs include:
 
 ```json
@@ -110,11 +110,11 @@ All logs include:
   "event": "gating_check_step_access",
   "level": "info",
   "reqId": "uuid",
-  "userId": "user-uuid",
+  "userIdHash": "a1b2c3...",
   "techniqueStepId": "step-uuid",
   "idx": 3,
   "entitlement": "premium",
-  "decision": {"allowed": true, "reason": "premium"},
+  "decision": { "allowed": true, "reason": "premium" },
   "durationMs": 45
 }
 ```
@@ -167,14 +167,17 @@ supabase secrets set RL_IP_RATE="60/m"
 ## Troubleshooting
 
 ### Rate limiting not working
+
 - Check Upstash credentials: `curl -H "Authorization: Bearer $TOKEN" $URL/ping`
 - Verify logs: `grep "rate_limiting unavailable"` (fail-open warning)
 
 ### CORS errors in browser
+
 - Ensure `Origin` header matches `CORS_ALLOWED_ORIGINS`
 - Check logs for `origin_forbidden` events
 - For mobile (Capacitor), add `capacitor://localhost` to whitelist
 
 ### 401 Unauthorized
+
 - Verify JWT is valid: `supabase auth verify <jwt>`
 - Check `Authorization: Bearer <token>` header format

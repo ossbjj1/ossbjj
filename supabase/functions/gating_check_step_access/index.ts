@@ -24,7 +24,11 @@ interface RateLimitConfig {
 }
 
 // Helper: Consistent response format
-function resp(body: Json, status: number, headers: Record<string, string> = {}) {
+function resp(
+  body: Json,
+  status: number,
+  headers: Record<string, string> = {},
+) {
   return new Response(JSON.stringify(body), {
     status,
     headers: { "Content-Type": "application/json", ...headers },
@@ -131,7 +135,8 @@ function getCorsHeaders(
   if (!allowAll && !allowedOrigins.has(origin)) return {};
   return {
     "Access-Control-Allow-Origin": allowAll ? "*" : origin,
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Headers":
+      "authorization, x-client-info, apikey, content-type",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Max-Age": "600",
     "Vary": "Origin",
@@ -148,7 +153,9 @@ function log(
   const levels = { info: 0, warn: 1, error: 2 };
   if (levels[level] < levels[logLevel as keyof typeof levels]) return;
 
-  console.log(JSON.stringify({ ts: new Date().toISOString(), event, level, ...fields }));
+  console.log(
+    JSON.stringify({ ts: new Date().toISOString(), event, level, ...fields }),
+  );
 }
 
 async function hashUserId(uid: string): Promise<string> {
@@ -167,7 +174,9 @@ serve(async (req) => {
 
   // Parse CORS whitelist
   const corsOriginsEnv = Deno.env.get("CORS_ALLOWED_ORIGINS") || "";
-  const allowedOrigins = new Set(corsOriginsEnv.split(",").map(o => o.trim()).filter(Boolean));
+  const allowedOrigins = new Set(
+    corsOriginsEnv.split(",").map((o) => o.trim()).filter(Boolean),
+  );
   const allowAll = allowedOrigins.size === 0; // dev-mode: allow all origins
   const corsHeaders = getCorsHeaders(origin, allowedOrigins, allowAll);
 
@@ -183,8 +192,13 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    // Validate Supabase env vars upfront
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+    if (!supabaseUrl || !supabaseAnonKey) {
+      log("server_config_error", { reqId, ip, error: "SUPABASE_URL or SUPABASE_ANON_KEY missing" }, "error");
+      return resp({ error: "server_error", detail: "server misconfigured" }, 500, corsHeaders);
+    }
     const authHeader = req.headers.get("Authorization");
 
     if (!authHeader) {
@@ -207,14 +221,23 @@ serve(async (req) => {
     // 2. Rate limiting (per user preferred, IP fallback)
     const userRateConfig = parseEnvRate(Deno.env.get("RL_USER_RATE") || "30/m");
     const ipRateConfig = parseEnvRate(Deno.env.get("RL_IP_RATE") || "60/m");
-    const userEpoch = Math.floor(Date.now() / (userRateConfig.windowSeconds * 1000));
-    const ipEpoch = Math.floor(Date.now() / (ipRateConfig.windowSeconds * 1000));
+    const userEpoch = Math.floor(
+      Date.now() / (userRateConfig.windowSeconds * 1000),
+    );
+    const ipEpoch = Math.floor(
+      Date.now() / (ipRateConfig.windowSeconds * 1000),
+    );
     const userKey = `rl:gating_check:user:${user.id}:${userEpoch}`;
     const ipKey = `rl:gating_check:ip:${ip}:${ipEpoch}`;
 
     const userRL = await checkRateLimit(userKey, userRateConfig);
     if (!userRL.ok) {
-      log("rate_limited", { reqId, userIdHash: userHash, scope: "user", retryAfter: userRL.retryAfter }, "warn");
+      log("rate_limited", {
+        reqId,
+        userIdHash: userHash,
+        scope: "user",
+        retryAfter: userRL.retryAfter,
+      }, "warn");
       return resp(
         { error: "rate_limited", retryAfter: userRL.retryAfter },
         429,
@@ -224,7 +247,12 @@ serve(async (req) => {
 
     const ipRL = await checkRateLimit(ipKey, ipRateConfig);
     if (!ipRL.ok) {
-      log("rate_limited", { reqId, ip, scope: "ip", retryAfter: ipRL.retryAfter }, "warn");
+      log("rate_limited", {
+        reqId,
+        ip,
+        scope: "ip",
+        retryAfter: ipRL.retryAfter,
+      }, "warn");
       return resp(
         { error: "rate_limited", retryAfter: ipRL.retryAfter },
         429,
@@ -237,12 +265,21 @@ serve(async (req) => {
     try {
       body = await req.json();
     } catch (e) {
-      log("bad_request", { reqId, userId: user.id, parseError: String(e) }, "warn");
+      log(
+        "bad_request",
+        { reqId, userIdHash: userHash, parseError: String(e) },
+        "warn",
+      );
       return resp({ error: "bad_request" }, 400, corsHeaders);
     }
-    const techniqueStepId = (body as Record<string, unknown>)?.["techniqueStepId"];
+    const techniqueStepId = (body as Record<string, unknown>)
+      ?.['techniqueStepId'];
     if (typeof techniqueStepId !== "string" || techniqueStepId.length === 0) {
-      log("bad_request", { reqId, userId: user.id, reason: "missing_or_invalid_stepId" }, "warn");
+      log("bad_request", {
+        reqId,
+        userIdHash: userHash,
+        reason: "missing_or_invalid_stepId",
+      }, "warn");
       return resp({ error: "bad_request" }, 400, corsHeaders);
     }
 
@@ -254,7 +291,11 @@ serve(async (req) => {
       .single();
 
     if (stepError || !stepData) {
-      log("step_not_found", { reqId, userIdHash: userHash, techniqueStepId }, "warn");
+      log(
+        "step_not_found",
+        { reqId, userIdHash: userHash, techniqueStepId },
+        "warn",
+      );
       return resp({ error: "not_found" }, 404, corsHeaders);
     }
 
@@ -284,7 +325,11 @@ serve(async (req) => {
       .maybeSingle();
 
     if (profileError) {
-      log("profile_fetch_error", { reqId, userIdHash: userHash, error: profileError.message }, "error");
+      log("profile_fetch_error", {
+        reqId,
+        userIdHash: userHash,
+        error: profileError.message,
+      }, "error");
       return resp({ error: "server_error" }, 500, corsHeaders);
     }
 
@@ -307,10 +352,16 @@ serve(async (req) => {
     return resp(response, 200, corsHeaders);
   } catch (error) {
     const durationMs = Date.now() - t0;
-    log("unexpected_error", { reqId, ip, error: String(error), durationMs }, "error");
+    log(
+      "unexpected_error",
+      { reqId, ip, error: String(error), durationMs },
+      "error",
+    );
     // Include CORS on 500
     const corsOriginsEnv = Deno.env.get("CORS_ALLOWED_ORIGINS") || "";
-    const allowedOrigins = new Set(corsOriginsEnv.split(",").map(o => o.trim()).filter(Boolean));
+    const allowedOrigins = new Set(
+      corsOriginsEnv.split(",").map((o) => o.trim()).filter(Boolean),
+    );
     const allowAll = allowedOrigins.size === 0;
     const origin = getOrigin(req);
     const headers = getCorsHeaders(origin, allowedOrigins, allowAll);
