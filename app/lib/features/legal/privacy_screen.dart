@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../core/design_tokens/colors.dart';
 import '../../core/l10n/app_strings.dart';
 import 'legal_document_screen.dart';
 
