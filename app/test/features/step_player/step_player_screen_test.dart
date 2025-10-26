@@ -100,6 +100,10 @@ void main() {
       expect(find.byKey(const Key('step_player_snackbar_success')),
           findsOneWidget);
       verify(mockGatingService.completeStep('step-123')).called(1);
+      // Verify success completion occurs (button reset + snackbar visible indicates full flow)
+      final button = tester.widget<ElevatedButton>(
+          find.byKey(const Key('step_player_complete_button')));
+      expect(button.onPressed, isNotNull);
     });
 
     testWidgets('shows error snackbar on failure', (tester) async {
