@@ -90,8 +90,8 @@ class GatingService {
       }
 
       // Call RPC mark_step_complete (idempotent via PK conflict)
-      final response = await Supabase.instance.client
-          .rpc('mark_step_complete', params: {
+      final response =
+          await Supabase.instance.client.rpc('mark_step_complete', params: {
         'p_technique_step_id': techniqueStepId,
       }).single();
 

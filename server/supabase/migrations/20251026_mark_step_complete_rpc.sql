@@ -29,7 +29,7 @@ BEGIN
   END IF;
 
   -- Idempotent insert: ON CONFLICT DO NOTHING
-  INSERT INTO public.user_step_progress (user_id, technique_step_id, done_at)
+  INSERT INTO public.user_step_progress (user_id, technique_step_id, completed_at)
   VALUES (v_user_id, p_technique_step_id, now())
   ON CONFLICT (user_id, technique_step_id) DO NOTHING;
 
