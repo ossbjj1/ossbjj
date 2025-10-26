@@ -6,15 +6,18 @@ import '../../core/design_tokens/typography.dart';
 import '../../core/l10n/strings.dart';
 import '../../core/navigation/routes.dart';
 import '../../core/services/progress_service.dart';
+import '../../core/services/gating_service.dart';
 
-/// Continue card for Home screen (Sprint 3 MVP).
+/// Continue card for Home screen (Sprint 3 MVP + Sprint 4).
 class ContinueCard extends StatefulWidget {
   const ContinueCard({
     super.key,
     required this.progressService,
+    required this.gatingService,
   });
 
   final ProgressService progressService;
+  final GatingService gatingService;
 
   @override
   State<ContinueCard> createState() => _ContinueCardState();
@@ -107,14 +110,9 @@ class _ContinueCardState extends State<ContinueCard> {
                   ),
                 const SizedBox(height: DsSpacing.lg),
                 ElevatedButton(
-                  onPressed: () {
-                    if (hint != null) {
-                      // Future: navigate to step player with hint.stepId
-                      context.go(AppRoutes.learnPath);
-                    } else {
-                      context.go(AppRoutes.onboardingPath);
-                    }
-                  },
+                  onPressed: hint != null
+                      ? () => _handleContinue(context, hint)
+                      : () => context.go(AppRoutes.onboardingPath),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Theme.of(context).colorScheme.onPrimary,
@@ -129,5 +127,32 @@ class _ContinueCardState extends State<ContinueCard> {
         );
       },
     );
+  }
+
+  /// Handle continue button press (Sprint 4: gating + navigation).
+  Future<void> _handleContinue(BuildContext context, ContinueHint hint) async {
+    try {
+      final access = await widget.gatingService.checkStepAccess(hint.stepId);
+
+      if (!mounted) return;
+
+      if (access.allowed) {
+        // Navigate to step player
+        context.go('${AppRoutes.stepPath}/${hint.stepId}');
+      } else {
+        // Navigate to paywall
+        context.go(AppRoutes.paywallPath);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      final t = StringsScope.of(context);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(t.unableToLoadContinueHint),
+          backgroundColor: DsColors.stateError,
+        ),
+      );
+    }
   }
 }

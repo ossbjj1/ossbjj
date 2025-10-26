@@ -1,11 +1,16 @@
+import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Consent management service (Sprint 2).
+/// Consent management service (Sprint 2 + Sprint 4).
 ///
 /// Handles user consent for analytics and media processing.
-/// DSGVO/GDPR compliant: opt-in required, stored locally.
+/// DSGVO/GDPR compliant: opt-in required, stored locally + server-synced.
+/// Sprint 4: Server as Single Source of Truth for analytics consent.
 class ConsentService {
-  ConsentService();
+  ConsentService({Logger? logger}) : _logger = logger ?? Logger();
+
+  final Logger _logger;
 
   static const _keyAnalytics = 'consent.analytics';
   static const _keyMedia = 'consent.media';
@@ -67,6 +72,81 @@ class ConsentService {
     await prefs.remove(_keyAnalytics);
     await prefs.remove(_keyMedia);
     await prefs.remove(_keyShown);
+  }
+
+  /// Fetch analytics consent from server (user_profile.consent_analytics).
+  /// Sprint 4: Server as SoT.
+  Future<bool> fetchServerAnalytics() async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) {
+      throw Exception('Cannot fetch server consent: user not logged in');
+    }
+
+    try {
+      final response = await Supabase.instance.client
+          .from('user_profile')
+          .select('consent_analytics')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+      if (response == null) {
+        return false; // No profile row yet
+      }
+
+      return response['consent_analytics'] as bool? ?? false;
+    } catch (e, stackTrace) {
+      _logger.e('Fetch server consent failed',
+          error: e, stackTrace: stackTrace);
+      rethrow;
+    }
+  }
+
+  /// Set analytics consent on server (UPDATE user_profile).
+  /// Sprint 4: Write to server, then sync local.
+  Future<void> setServerAnalytics(bool value) async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) {
+      throw Exception('Cannot set server consent: user not logged in');
+    }
+
+    try {
+      await Supabase.instance.client
+          .from('user_profile')
+          .update({'consent_analytics': value}).eq('user_id', user.id);
+      _logger.i('Server consent updated: $value');
+      await setAnalytics(value); // Mirror locally
+    } catch (e, stackTrace) {
+      _logger.e('Set server consent failed', error: e, stackTrace: stackTrace);
+      rethrow;
+    }
+  }
+
+  /// Sync analytics consent from server to local (login hook).
+  /// Server is SoT; local is mirror.
+  /// Sprint 4: Call on app start after auth.
+  Future<void> syncAnalyticsFromServer() async {
+    try {
+      // Ensure profile row exists (idempotent)
+      await _ensureUserProfile();
+
+      final serverValue = await fetchServerAnalytics();
+      await setAnalytics(serverValue);
+      _logger.i('Consent synced from server: $serverValue');
+    } catch (e, stackTrace) {
+      _logger.e('Consent sync failed', error: e, stackTrace: stackTrace);
+      rethrow;
+    }
+  }
+
+  /// Ensure user_profile row exists (idempotent insert).
+  Future<void> _ensureUserProfile() async {
+    try {
+      await Supabase.instance.client.rpc('ensure_user_profile');
+    } catch (e, stackTrace) {
+      _logger.e('ensure_user_profile RPC failed',
+          error: e, stackTrace: stackTrace);
+      rethrow;
+    }
   }
 }
 
