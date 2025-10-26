@@ -46,6 +46,7 @@ class DsColors {
 
   // Semantic - Brand
   static const Color brandPrimary = redBase;
+  static const Color brandRed = redBase;
   static const Color brandSecondary = blueBase;
   static const Color brandTatami = tatamiSand;
 

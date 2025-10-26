@@ -28,6 +28,23 @@ class AppRoutes {
   static const String onboardingPath = '/onboarding';
   static const String onboardingName = 'onboarding';
 
+  // Auth routes (Sprint 2)
+  static const String loginPath = '/login';
+  static const String loginName = 'login';
+
+  static const String signupPath = '/signup';
+  static const String signupName = 'signup';
+
+  static const String resetPasswordPath = '/reset-password';
+  static const String resetPasswordName = 'reset-password';
+
+  // Legal routes (Sprint 2)
+  static const String privacyPath = '/legal/privacy';
+  static const String privacyName = 'privacy';
+
+  static const String termsPath = '/legal/terms';
+  static const String termsName = 'terms';
+
   // Detail routes (no bottom nav, Sprint 5+)
   static const String techniquePath = '/technique/:id';
   static const String techniqueName = 'technique';
@@ -42,6 +59,11 @@ class AppRoutes {
     consentPath,
     paywallPath,
     onboardingPath,
+    loginPath,
+    signupPath,
+    resetPasswordPath,
+    privacyPath,
+    termsPath,
   };
 
   /// Routes where bottom nav is visible (main tabs).

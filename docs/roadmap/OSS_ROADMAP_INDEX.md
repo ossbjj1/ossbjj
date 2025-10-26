@@ -29,9 +29,9 @@ Die Roadmap ist in 2 Phasen aufgeteilt:
 
 ## 🎯 Aktueller Status
 
-**Sprint:** ✅ S0 Complete (Flutter-App, CI/CD, Health-Endpoint deployed)
-**Nächster Schritt:** Sprint 1 starten (Navigation-Shell, Bottom-Nav)
-**Handoff:** siehe [SPRINT_0_HANDOFF.md](../SPRINT_0_HANDOFF.md)
+**Sprint:** ✅ S2 Complete (Consent, DSGVO, Legal, Auth)
+**Nächster Schritt:** Sprint 3 starten (Onboarding, Settings Basis)
+**PR:** https://github.com/ossbjj1/ossbjj/pull/5
 
 ---
 

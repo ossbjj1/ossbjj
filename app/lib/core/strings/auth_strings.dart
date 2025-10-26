@@ -25,6 +25,7 @@ class AuthStrings {
   static const successCta = 'Continue';
 
   // Errors
+  static const errEmailEmpty = 'Please enter your email.';
   static const errEmailInvalid =
       'Invalid email format. Please check and try again.';
   static const errPasswordInvalid =

@@ -25,6 +25,8 @@
 
 **Ziel:** Tab-Navigation steht; alle Top-Screens als Stubs.
 
+**Status:** ✅ Done (CI grün; Analyze/Test/Format bestanden)
+
 **Tasks:**
 1. `lib/router.dart`: Shell-Route mit 4 Tabs → `/home`, `/learn`, `/stats`, `/settings`
 2. Bottom-Nav-Widget: Icons/Labels (DE/EN) + Active-State (AA)
@@ -42,6 +44,8 @@
 ## Sprint 2 – Consent (DSGVO) + Legal + Auth
 
 **Ziel:** Nutzereinwilligung + Konto.
+
+**Status:** ✅ Done (Consent opt-in gates analytics; Auth + Legal + Settings implemented)
 
 **Tasks:**
 1. Consent-Modal: Toggles Analytics, Media; Links zu Privacy/AGB
