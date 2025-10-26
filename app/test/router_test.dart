@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:oss/router.dart';
-import 'package:oss/core/navigation/routes.dart';
+import 'package:go_router/go_router.dart';
 
 late GoRouter _testRouter;
 
@@ -24,6 +23,10 @@ GoRouter _createTestRouter() {
                 BottomNavigationBarItem(
                     label: 'Settings', icon: Icon(Icons.settings)),
               ],
+              onTap: (index) {
+                const paths = ['/', '/learn', '/stats', '/settings'];
+                GoRouter.of(context).go(paths[index]);
+              },
             ),
           );
         },
