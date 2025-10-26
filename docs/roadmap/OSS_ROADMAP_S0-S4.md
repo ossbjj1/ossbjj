@@ -25,6 +25,8 @@
 
 **Ziel:** Tab-Navigation steht; alle Top-Screens als Stubs.
 
+**Status:** ✅ Done (CI grün; Analyze/Test/Format bestanden)
+
 **Tasks:**
 1. `lib/router.dart`: Shell-Route mit 4 Tabs → `/home`, `/learn`, `/stats`, `/settings`
 2. Bottom-Nav-Widget: Icons/Labels (DE/EN) + Active-State (AA)

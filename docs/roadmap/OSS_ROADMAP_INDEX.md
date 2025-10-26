@@ -29,9 +29,9 @@ Die Roadmap ist in 2 Phasen aufgeteilt:
 
 ## 🎯 Aktueller Status
 
-**Sprint:** ✅ S0 Complete (Flutter-App, CI/CD, Health-Endpoint deployed)
-**Nächster Schritt:** Sprint 1 starten (Navigation-Shell, Bottom-Nav)
-**Handoff:** siehe [SPRINT_0_HANDOFF.md](../SPRINT_0_HANDOFF.md)
+**Sprint:** ✅ S1 Complete (Navigation-Shell, Bottom-Nav, Tests grün)
+**Nächster Schritt:** Sprint 2 starten (Consent, DSGVO, Legal, Auth)
+**Handoff:** siehe [SPRINT_1_HANDOFF.md](../SPRINT_1_HANDOFF.md)
 
 ---
 
