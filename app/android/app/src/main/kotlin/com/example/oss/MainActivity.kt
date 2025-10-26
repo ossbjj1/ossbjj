@@ -1,4 +1,4 @@
-package com.ossbjj.app
+package com.example.oss
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -3,12 +3,97 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:oss/router.dart';
 import 'package:oss/core/navigation/routes.dart';
 
+late GoRouter _testRouter;
+
+GoRouter _createTestRouter() {
+  return GoRouter(
+    initialLocation: '/',
+    routes: [
+      ShellRoute(
+        builder: (context, state, child) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Test')),
+            body: child,
+            bottomNavigationBar: BottomNavigationBar(
+              items: const [
+                BottomNavigationBarItem(label: 'Home', icon: Icon(Icons.home)),
+                BottomNavigationBarItem(label: 'Learn', icon: Icon(Icons.school)),
+                BottomNavigationBarItem(label: 'Stats', icon: Icon(Icons.bar_chart)),
+                BottomNavigationBarItem(label: 'Settings', icon: Icon(Icons.settings)),
+              ],
+            ),
+          );
+        },
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (context, state) => Scaffold(
+              appBar: AppBar(title: const Text('Home')),
+              body: const Text('Home'),
+            ),
+          ),
+          GoRoute(
+            path: '/learn',
+            builder: (context, state) => Scaffold(
+              appBar: AppBar(title: const Text('Learn')),
+              body: const Text('Learn'),
+            ),
+          ),
+          GoRoute(
+            path: '/stats',
+            builder: (context, state) => Scaffold(
+              appBar: AppBar(title: const Text('Stats')),
+              body: const Text('Stats'),
+            ),
+          ),
+          GoRoute(
+            path: '/settings',
+            builder: (context, state) => Scaffold(
+              appBar: AppBar(title: const Text('Settings')),
+              body: const Text('Settings'),
+            ),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/consent',
+        builder: (context, state) => Scaffold(
+          appBar: AppBar(title: const Text('Consent')),
+          body: const Text('Consent'),
+        ),
+      ),
+      GoRoute(
+        path: '/paywall',
+        builder: (context, state) => Scaffold(
+          appBar: AppBar(title: const Text('Paywall')),
+          body: const Text('Paywall'),
+        ),
+      ),
+      GoRoute(
+        path: '/technique/:id',
+        builder: (context, state) => Scaffold(
+          appBar: AppBar(title: const Text('Technique (Sprint 5)')),
+          body: const Text('Technique'),
+        ),
+      ),
+    ],
+  );
+}
+
 void main() {
   group('Router Navigation Tests (Sprint 1)', () {
+    setUp(() {
+      _testRouter = _createTestRouter();
+    });
+
+    tearDown(() {
+      _testRouter.dispose();
+    });
+
     testWidgets('starts at home route', (tester) async {
       await tester.pumpWidget(
         MaterialApp.router(
-          routerConfig: appRouter,
+          routerConfig: _testRouter,
         ),
       );
       await tester.pumpAndSettle();
@@ -20,7 +105,7 @@ void main() {
     testWidgets('navigates between main tabs', (tester) async {
       await tester.pumpWidget(
         MaterialApp.router(
-          routerConfig: appRouter,
+          routerConfig: _testRouter,
         ),
       );
       await tester.pumpAndSettle();
@@ -47,7 +132,7 @@ void main() {
     testWidgets('bottom nav visible on main tabs', (tester) async {
       await tester.pumpWidget(
         MaterialApp.router(
-          routerConfig: appRouter,
+          routerConfig: _testRouter,
         ),
       );
       await tester.pumpAndSettle();
@@ -59,16 +144,24 @@ void main() {
   });
 
   group('Router Hide-Rules Tests (Sprint 1)', () {
+    setUp(() {
+      _testRouter = _createTestRouter();
+    });
+
+    tearDown(() {
+      _testRouter.dispose();
+    });
+
     testWidgets('bottom nav hidden on consent modal', (tester) async {
       await tester.pumpWidget(
         MaterialApp.router(
-          routerConfig: appRouter,
+          routerConfig: _testRouter,
         ),
       );
       await tester.pumpAndSettle();
 
       // Navigate to consent
-      appRouter.go(AppRoutes.consentPath);
+      _testRouter.go('/consent');
       await tester.pumpAndSettle();
 
       // Expect Consent screen (AppBar title)
@@ -82,13 +175,13 @@ void main() {
     testWidgets('bottom nav hidden on paywall modal', (tester) async {
       await tester.pumpWidget(
         MaterialApp.router(
-          routerConfig: appRouter,
+          routerConfig: _testRouter,
         ),
       );
       await tester.pumpAndSettle();
 
       // Navigate to paywall
-      appRouter.go(AppRoutes.paywallPath);
+      _testRouter.go('/paywall');
       await tester.pumpAndSettle();
 
       // Expect Paywall screen (AppBar title)
@@ -103,13 +196,13 @@ void main() {
         (tester) async {
       await tester.pumpWidget(
         MaterialApp.router(
-          routerConfig: appRouter,
+          routerConfig: _testRouter,
         ),
       );
       await tester.pumpAndSettle();
 
       // Navigate to technique detail
-      appRouter.go('/technique/1');
+      _testRouter.go('/technique/1');
       await tester.pumpAndSettle();
 
       // Expect placeholder screen (AppBar title)

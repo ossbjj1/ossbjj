@@ -13,7 +13,13 @@ class FlutterWindow : public Win32Window {
  public:
   // Creates a new FlutterWindow hosting a Flutter view running |project|.
   explicit FlutterWindow(const flutter::DartProject& project);
-  virtual ~FlutterWindow() override;
+  ~FlutterWindow() override;
+
+  // Disable copy and move semantics
+  FlutterWindow(const FlutterWindow&) = delete;
+  FlutterWindow& operator=(const FlutterWindow&) = delete;
+  FlutterWindow(FlutterWindow&&) = delete;
+  FlutterWindow& operator=(FlutterWindow&&) = delete;
 
  protected:
   // Win32Window:
