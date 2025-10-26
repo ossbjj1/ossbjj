@@ -11,6 +11,20 @@
     "stats": {"de": "Statistik", "en": "Stats"},
     "settings": {"de": "Einstellungen", "en": "Settings"}
   },
+  "nav": {
+    "title": {
+      "home": {"de": "Home", "en": "Home"},
+      "learn": {"de": "Lernen", "en": "Learn"},
+      "stats": {"de": "Statistik", "en": "Stats"},
+      "settings": {"de": "Einstellungen", "en": "Settings"}
+    }
+  },
+  "cta": {
+    "continue": {"de": "Weiter", "en": "Continue"},
+    "save": {"de": "Speichern", "en": "Save"},
+    "cancel": {"de": "Abbrechen", "en": "Cancel"},
+    "close": {"de": "Schließen", "en": "Close"}
+  },
   "learn": {
     "variant_title": {"de": "Gi oder No-Gi?", "en": "Gi or No-Gi?"},
     "variant_gi": {"de": "Gi", "en": "Gi"},

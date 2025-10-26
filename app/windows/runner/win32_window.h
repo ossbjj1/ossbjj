@@ -12,7 +12,7 @@
 // rendering and input handling
 class Win32Window {
  public:
-  struct Point {
+struct Point {
     int x;
     int y;
     Point(int x, int y) : x(x), y(y) {}

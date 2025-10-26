@@ -6,8 +6,7 @@ reviews:
     enabled: true
     drafts: false
   request_changes_workflow: false
-  commit_status:
-    enabled: true
+  commit_status: true
   
   # OSS-specific: enforce WARP.md governance
   path_filters:

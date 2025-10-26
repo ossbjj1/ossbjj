@@ -33,7 +33,7 @@ dependencies:
   logger: ^2.0.0
 
   # Analytics (Sentry, PostHog)
-  sentry_flutter: ^7.8.0
+  sentry_flutter: ^8.0.0
   posthog_flutter: ^3.0.0
 
   # Local notifications
