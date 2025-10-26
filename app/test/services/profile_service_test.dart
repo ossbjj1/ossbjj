@@ -4,7 +4,7 @@ import 'package:oss/core/services/profile_service.dart';
 void main() {
   group('UserProfile', () {
     test('isComplete returns true when all required fields set', () {
-      final profile = UserProfile(
+      const profile = UserProfile(
         belt: 'blue',
         expRange: 'intermediate',
         weeklyGoal: 3,
@@ -16,7 +16,7 @@ void main() {
     });
 
     test('isComplete returns false when belt missing', () {
-      final profile = UserProfile(
+      const profile = UserProfile(
         expRange: 'intermediate',
         weeklyGoal: 3,
         goalType: 'technique',
@@ -26,7 +26,7 @@ void main() {
     });
 
     test('isComplete returns false when expRange missing', () {
-      final profile = UserProfile(
+      const profile = UserProfile(
         belt: 'blue',
         weeklyGoal: 3,
         goalType: 'technique',
@@ -36,7 +36,7 @@ void main() {
     });
 
     test('isComplete returns false when weeklyGoal missing', () {
-      final profile = UserProfile(
+      const profile = UserProfile(
         belt: 'blue',
         expRange: 'intermediate',
         goalType: 'technique',
@@ -46,7 +46,7 @@ void main() {
     });
 
     test('ageGroup is optional', () {
-      final profile = UserProfile(
+      const profile = UserProfile(
         belt: 'blue',
         expRange: 'intermediate',
         weeklyGoal: 3,

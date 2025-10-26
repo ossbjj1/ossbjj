@@ -8,7 +8,7 @@ import '../../core/navigation/routes.dart';
 import '../../core/services/progress_service.dart';
 
 /// Continue card for Home screen (Sprint 3 MVP).
-class ContinueCard extends StatelessWidget {
+class ContinueCard extends StatefulWidget {
   const ContinueCard({
     super.key,
     required this.progressService,
@@ -17,12 +17,45 @@ class ContinueCard extends StatelessWidget {
   final ProgressService progressService;
 
   @override
+  State<ContinueCard> createState() => _ContinueCardState();
+}
+
+class _ContinueCardState extends State<ContinueCard> {
+  late Future<ContinueHint?> _lastHintFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    // Cache the future once to avoid recreating on every rebuild
+    _lastHintFuture = widget.progressService.loadLast();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = StringsScope.of(context);
 
     return FutureBuilder<ContinueHint?>(
-      future: progressService.loadLast(),
+      future: _lastHintFuture,
       builder: (context, snapshot) {
+        // Handle error state
+        if (snapshot.hasError) {
+          return Card(
+            color: DsColors.bgSurface,
+            margin: const EdgeInsets.all(DsSpacing.lg),
+            child: Padding(
+              padding: const EdgeInsets.all(DsSpacing.lg),
+              child: Center(
+                child: Text(
+                  'Unable to load continue hint',
+                  style: DsTypography.bodyMedium.copyWith(
+                    color: DsColors.textSecondary,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
@@ -69,10 +102,13 @@ class ContinueCard extends StatelessWidget {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: DsColors.brandRed,
-                    foregroundColor: DsColors.textPrimary,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor:
+                        Theme.of(context).colorScheme.onPrimary,
                   ),
-                  child: Text(t.ctaContinue),
+                  child: Text(
+                    hint != null ? t.ctaContinue : t.onboardingSave,
+                  ),
                 ),
               ],
             ),

@@ -41,14 +41,8 @@ class ProfileService {
         throw Exception('Cannot upsert profile: user not logged in');
       }
 
-      await Supabase.instance.client.from('user_profile').upsert({
-        'user_id': user.id,
-        'belt': profile.belt,
-        'exp_range': profile.expRange,
-        'weekly_goal': profile.weeklyGoal,
-        'goal_type': profile.goalType,
-        'age_group': profile.ageGroup,
-      });
+      final payload = profile.toUpsertJson(user.id);
+      await Supabase.instance.client.from('user_profile').upsert(payload);
 
       _logger.i('Profile upserted');
     } catch (e, stackTrace) {
@@ -84,6 +78,8 @@ class UserProfile {
     );
   }
 
+
+  /// Convert profile to JSON for toJson() serialization.
   Map<String, dynamic> toJson() {
     return {
       'belt': belt,
@@ -94,6 +90,16 @@ class UserProfile {
     };
   }
 
-  /// Check if profile is complete (required fields filled).
-  bool get isComplete => belt != null && expRange != null && weeklyGoal != null;
+  /// Convert profile to JSON with user_id for Supabase upsert.
+  Map<String, dynamic> toUpsertJson(String userId) {
+    return {
+      ...toJson(),
+      'user_id': userId,
+    };
+  }
+
+  /// Check if profile is complete (required fields filled including goalType).
+  /// ageGroup is optional as per product design.
+  bool get isComplete =>
+      belt != null && expRange != null && weeklyGoal != null && goalType != null;
 }

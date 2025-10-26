@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 /// Runtime i18n strings (Sprint 3 MVP).
 ///
 /// Supports DE/EN via Locale. Future: migrate to ARB + flutter_localizations.
+/// TODO(i18n): Move all string literals to ARB files and use flutter_localizations
+/// for compile-time safety and automatic pluralization/formatting.
+///
+/// String keys are defined as const to enable type-safe lookups during migration.
 class Strings {
   const Strings._({required this.locale});
 
@@ -115,6 +119,10 @@ class Strings {
 
   // Paywall
   String get paywallTitle => isDe ? 'Paywall' : 'Paywall';
+
+  /// Add missing localization keys for error handling.
+  String get errorGeneric =>
+      isDe ? 'Ein Fehler ist aufgetreten' : 'An error occurred';
 }
 
 /// InheritedNotifier for Strings (live language switching).
@@ -134,6 +142,20 @@ class StringsScope extends InheritedNotifier<ValueNotifier<Locale>> {
     return Strings.of(scope.notifier!.value);
   }
 
+  /// Access Strings or return null if StringsScope is not in widget tree.
+  /// Use this for safe access in tests or optional UI contexts.
+  static Strings? maybeOf(BuildContext context) {
+    final scope = context.dependOnInheritedWidgetOfExactType<StringsScope>();
+    if (scope == null) return null;
+    return Strings.of(scope.notifier!.value);
+  }
+
+  /// Access Strings or fallback to English default.
+  /// Useful for tests that don't wrap widgets in StringsScope.
+  static Strings maybeOrDefault(BuildContext context) {
+    return maybeOf(context) ?? Strings.of(const Locale('en'));
+  }
+
   /// Access current Locale.
   static Locale localeOf(BuildContext context) {
     final scope = context.dependOnInheritedWidgetOfExactType<StringsScope>();
@@ -141,5 +163,11 @@ class StringsScope extends InheritedNotifier<ValueNotifier<Locale>> {
       throw FlutterError('StringsScope not found in widget tree');
     }
     return scope.notifier!.value;
+  }
+
+  /// Access current Locale or return null if StringsScope is not in widget tree.
+  static Locale? maybeLocaleOf(BuildContext context) {
+    final scope = context.dependOnInheritedWidgetOfExactType<StringsScope>();
+    return scope?.notifier?.value;
   }
 }

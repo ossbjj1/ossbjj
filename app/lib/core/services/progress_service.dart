@@ -1,30 +1,46 @@
+import 'dart:convert';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Progress service for "continue" hint (Sprint 3 stub).
+///
+/// Persists continue hint atomically using single key + JSON serialization
+/// to avoid partial state on crash.
 class ProgressService {
   ProgressService();
 
-  static const _keyStepId = 'last.step.id';
-  static const _keyStepTitle = 'last.step.title';
+  static const _keyHint = 'app.continue_hint';
 
-  /// Load last step hint (MVP stub: uses SharedPreferences).
+  /// Load last step hint from atomic JSON storage.
+  /// Returns null if no hint saved or JSON is malformed (tolerant read).
   Future<ContinueHint?> loadLast() async {
     final prefs = await SharedPreferences.getInstance();
-    final id = prefs.getString(_keyStepId);
-    final title = prefs.getString(_keyStepTitle);
+    final json = prefs.getString(_keyHint);
 
-    if (id == null || title == null) {
+    if (json == null) {
       return null;
     }
 
-    return ContinueHint(stepId: id, title: title);
+    try {
+      final decoded = jsonDecode(json) as Map<String, dynamic>;
+      return ContinueHint.fromJson(decoded);
+    } catch (e) {
+      // Tolerate malformed JSON gracefully
+      return null;
+    }
   }
 
-  /// Save last step hint (MVP stub).
+  /// Save last step hint atomically as single JSON-encoded key.
   Future<void> setLast(ContinueHint hint) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_keyStepId, hint.stepId);
-    await prefs.setString(_keyStepTitle, hint.title);
+    final json = jsonEncode(hint.toJson());
+    await prefs.setString(_keyHint, json);
+  }
+
+  /// Clear last step hint by removing the key.
+  Future<void> clearLast() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_keyHint);
   }
 }
 
@@ -37,4 +53,18 @@ class ContinueHint {
 
   final String stepId;
   final String title;
+
+  /// Serialize to JSON for atomic persistence.
+  Map<String, dynamic> toJson() => {
+        'stepId': stepId,
+        'title': title,
+      };
+
+  /// Deserialize from JSON.
+  factory ContinueHint.fromJson(Map<String, dynamic> json) {
+    return ContinueHint(
+      stepId: json['stepId'] as String,
+      title: json['title'] as String,
+    );
+  }
 }

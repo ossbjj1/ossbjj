@@ -27,6 +27,8 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  String? _settingsUpdateError;
+
   Future<void> _handleLogout(BuildContext context) async {
     try {
       await widget.authService.signOut();
@@ -54,14 +56,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                title: const Text('Deutsch'),
+                title: const Text(
+                  'Deutsch',
+                  style: TextStyle(
+                    color: DsColors.textPrimary,
+                  ),
+                ),
                 onTap: () async {
                   await widget.localeService.setLocale(const Locale('de'));
                   if (mounted) Navigator.pop(context);
                 },
               ),
               ListTile(
-                title: const Text('English'),
+                title: const Text(
+                  'English',
+                  style: TextStyle(
+                    color: DsColors.textPrimary,
+                  ),
+                ),
                 onTap: () async {
                   await widget.localeService.setLocale(const Locale('en'));
                   if (mounted) Navigator.pop(context);
@@ -93,13 +105,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
             subtitle: Text(languageLabel),
             onTap: _showLanguagePicker,
           ),
-          SwitchListTile(
-            secondary: const Icon(Icons.volume_up_outlined),
-            title: Text(t.settingsAudio),
-            value: widget.audioService.enabled,
-            onChanged: (value) async {
-              await widget.audioService.setEnabled(value);
-              setState(() {});
+          ValueListenableBuilder<bool>(
+            valueListenable: widget.audioService.audioEnabled,
+            builder: (ctx, audioEnabled, _) {
+              return SwitchListTile(
+                secondary: const Icon(Icons.volume_up_outlined),
+                title: Text(t.settingsAudio),
+                value: audioEnabled,
+                onChanged: (value) async {
+                  final priorValue = audioEnabled;
+                  try {
+                    await widget.audioService.setEnabled(value);
+                    // Optimistically updated via audioEnabled notifier
+                    if (mounted) {
+                      setState(() => _settingsUpdateError = null);
+                    }
+                  } catch (e) {
+                    // Revert on failure
+                    await widget.audioService.setEnabled(priorValue);
+                    if (mounted) {
+                      setState(() {
+                        _settingsUpdateError =
+                            'Failed to update audio setting: $e';
+                      });
+                      // ignore: use_build_context_synchronously
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(_settingsUpdateError!),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
+                },
+              );
             },
           ),
           const Divider(),

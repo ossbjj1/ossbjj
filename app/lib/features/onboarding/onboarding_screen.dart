@@ -59,8 +59,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       }
     } catch (e) {
       if (mounted) {
+        debugPrint('Onboarding save error: $e');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(
+            content: Text(StringsScope.of(context).errorGeneric),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {
