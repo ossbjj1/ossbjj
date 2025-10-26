@@ -1,0 +1,73 @@
+name: flutter-ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+
+      - name: Flutter pub get
+        working-directory: app
+        run: flutter pub get
+
+      - name: Format (fail on diff)
+        working-directory: app
+        run: dart format --set-exit-if-changed lib/ test/
+
+      - name: Analyze
+        working-directory: app
+        run: flutter analyze
+
+      - name: Test
+        working-directory: app
+        run: flutter test --no-pub
+
+  privacy-gate:
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Block service_role usage in client code (RLS safety)
+        run: |
+          if grep -R -nI -E '\bservice_role\b' app/lib/ >/dev/null 2>&1; then
+            echo "::error::GEFÄHRLICH: 'service_role' im Client-Code gefunden. RLS würde umgangen (WARP.md Security Rule). Bitte entfernen."
+            echo "Treffer:" && grep -R -nI -E '\bservice_role\b' app/lib/ || true
+            exit 1
+          else
+            echo "✅ Kein 'service_role' im Client (app/lib/) gefunden."
+          fi
+
+      - name: Detect changed paths
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            migrations:
+              - 'server/supabase/migrations/**'
+            privacy_docs:
+              - 'docs/privacy/reviews/**'
+
+      - name: Enforce privacy review when migrations changed
+        if: ${{ steps.changes.outputs.migrations == 'true' && steps.changes.outputs.privacy_docs != 'true' }}
+        run: |
+          echo "::error::Supabase-Migrationen geändert – bitte docs/privacy/reviews/<sprint-id>.md aktualisieren (WARP.md Acceptance-Regel)."
+          exit 1

@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "OSS typography tokens",
+  "fontFamilies": {
+    "primary": "Inter",
+    "display": "Oswald",
+    "monospace": "Roboto Mono"
+  },
+  "fontSizes": {
+    "xs": 12,
+    "sm": 14,
+    "base": 16,
+    "lg": 18,
+    "xl": 20,
+    "2xl": 24,
+    "3xl": 28,
+    "4xl": 32,
+    "5xl": 40,
+    "6xl": 48
+  },
+  "fontWeights": {
+    "regular": 400,
+    "medium": 500,
+    "semibold": 600,
+    "bold": 700
+  },
+  "lineHeights": {
+    "tight": 1.2,
+    "normal": 1.5,
+    "relaxed": 1.75
+  },
+  "letterSpacing": {
+    "tight": "-0.02em",
+    "normal": "0em",
+    "wide": "0.05em"
+  },
+  "styles": {
+    "h1": {
+      "family": "display",
+      "size": "4xl",
+      "weight": "bold",
+      "lineHeight": "tight",
+      "letterSpacing": "normal"
+    },
+    "h2": {
+      "family": "display",
+      "size": "3xl",
+      "weight": "bold",
+      "lineHeight": "tight",
+      "letterSpacing": "normal"
+    },
+    "h3": {
+      "family": "display",
+      "size": "2xl",
+      "weight": "semibold",
+      "lineHeight": "normal",
+      "letterSpacing": "normal"
+    },
+    "body": {
+      "family": "primary",
+      "size": "base",
+      "weight": "regular",
+      "lineHeight": "normal",
+      "letterSpacing": "normal"
+    },
+    "bodyLarge": {
+      "family": "primary",
+      "size": "lg",
+      "weight": "regular",
+      "lineHeight": "normal",
+      "letterSpacing": "normal"
+    },
+    "bodySmall": {
+      "family": "primary",
+      "size": "sm",
+      "weight": "regular",
+      "lineHeight": "normal",
+      "letterSpacing": "normal"
+    },
+    "button": {
+      "family": "primary",
+      "size": "base",
+      "weight": "semibold",
+      "lineHeight": "tight",
+      "letterSpacing": "wide"
+    },
+    "caption": {
+      "family": "primary",
+      "size": "xs",
+      "weight": "medium",
+      "lineHeight": "normal",
+      "letterSpacing": "normal"
+    },
+    "label": {
+      "family": "primary",
+      "size": "sm",
+      "weight": "medium",
+      "lineHeight": "normal",
+      "letterSpacing": "wide"
+    }
+  }
+}

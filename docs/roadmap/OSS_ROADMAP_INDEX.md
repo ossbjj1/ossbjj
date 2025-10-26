@@ -29,8 +29,9 @@ Die Roadmap ist in 2 Phasen aufgeteilt:
 
 ## 🎯 Aktueller Status
 
-**Sprint:** Pre-0 (nur Docs/Governance vorhanden)
-**Nächster Schritt:** Sprint 0 starten (Flutter-App aufsetzen, CI, Health-Endpoint)
+**Sprint:** ✅ S0 Complete (Flutter-App, CI/CD, Health-Endpoint deployed)
+**Nächster Schritt:** Sprint 1 starten (Navigation-Shell, Bottom-Nav)
+**Handoff:** siehe [SPRINT_0_HANDOFF.md](../SPRINT_0_HANDOFF.md)
 
 ---
 

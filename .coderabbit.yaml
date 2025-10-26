@@ -1,0 +1,51 @@
+language: en-US
+reviews:
+  profile: assertive
+  high_level_summary: true
+  auto_review:
+    enabled: true
+    drafts: false
+  request_changes_workflow: false
+  commit_status:
+    enabled: true
+  
+  # OSS-specific: enforce WARP.md governance
+  path_filters:
+    # Always exclude noise and build artifacts
+    - "!**/*.lock"
+    - "!**/.DS_Store"
+    - "!**/supabase/.temp/**"
+    - "!**/.dart_tool/**"
+    - "!**/build/**"
+
+    # Exclude non-target platforms for MVP (iOS-first). Avoid false-positive clang headers.
+    - "!app/windows/**"
+    - "!app/linux/**"
+    - "!app/macos/**"
+    - "!web/**"
+
+    # Generated or build-time created headers (Flutter generates these on build)
+    - "!app/ios/Runner/GeneratedPluginRegistrant.*"
+
+    # Reduce noise from long-form docs grammar in early sprints
+    - "!docs/privacy/reviews/**"
+    - "!docs/SETUP_BRANCH_PROTECTION.md"
+  
+  # OSS-specific governance checks
+  pre_merge_checks:
+    custom_checks:
+      - name: "WARP.md Checkpoints"
+        instructions: "PR must include 🔵 Role section, 🟢 BMAD (Business/Modeling/Architecture/DoD) section, and ✅ Prove section with test/lint/format results"
+        mode: error
+      
+      - name: "Secrets Detection"
+        instructions: "Check for hardcoded API keys, secrets, passwords, or tokens. All credentials must use environment variables with {{SECRET_NAME}} pattern. Look for patterns like apiKey=, password=, token= with literal string values."
+        mode: error
+      
+      - name: "Client-Side Entitlement Check"
+        instructions: "Entitlement and paywall checks must be server-authoritative via Edge Functions (POST /gating/step-complete). Do not add client-side checks in app/**/*.dart that trust entitlement flags. Refer to WARP.md Security Rule: 'MIWF: Engine darf nackt laufen — Daten nie'."
+        mode: warning
+      
+      - name: "Telemetry Consent Gate"
+        instructions: "Ensure all telemetry calls (PostHog, Sentry, analytics) are gated by consent_analytics flag. No event tracking without explicit user opt-in. Verify that analytics init and event sends check user consent first (DSGVO compliance)."
+        mode: warning
