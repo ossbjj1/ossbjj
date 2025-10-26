@@ -17,9 +17,12 @@ GoRouter _createTestRouter() {
             bottomNavigationBar: BottomNavigationBar(
               items: const [
                 BottomNavigationBarItem(label: 'Home', icon: Icon(Icons.home)),
-                BottomNavigationBarItem(label: 'Learn', icon: Icon(Icons.school)),
-                BottomNavigationBarItem(label: 'Stats', icon: Icon(Icons.bar_chart)),
-                BottomNavigationBarItem(label: 'Settings', icon: Icon(Icons.settings)),
+                BottomNavigationBarItem(
+                    label: 'Learn', icon: Icon(Icons.school)),
+                BottomNavigationBarItem(
+                    label: 'Stats', icon: Icon(Icons.bar_chart)),
+                BottomNavigationBarItem(
+                    label: 'Settings', icon: Icon(Icons.settings)),
               ],
             ),
           );
