@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
+import 'package:flutter/widgets.dart';
 import 'package:oss/core/services/gating_service.dart';
 import 'package:oss/features/step_player/step_player_screen.dart';
 import 'package:oss/core/l10n/strings.dart';
@@ -9,21 +11,36 @@ import 'package:oss/core/l10n/strings.dart';
 import '../../helpers/router_test_helper.dart';
 import 'step_player_screen_test.mocks.dart';
 
+class MockNavigatorObserver extends Mock implements NavigatorObserver {}
+
 @GenerateMocks([GatingService])
 void main() {
   group('StepPlayerScreen Widget Tests', () {
     late MockGatingService mockGatingService;
+    late MockNavigatorObserver mockObserver;
 
     setUp(() {
       mockGatingService = MockGatingService();
+      mockObserver = MockNavigatorObserver();
     });
 
     Widget createTestWidget() {
-      final router = RouterTestHelper.createMockRouter(
-        homeBuilder: (context, state) => StepPlayerScreen(
-          stepId: 'step-123',
-          gatingService: mockGatingService,
-        ),
+      final router = GoRouter(
+        initialLocation: '/player',
+        observers: [mockObserver],
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (context, state) => const Scaffold(body: Text('Home')),
+          ),
+          GoRoute(
+            path: '/player',
+            builder: (context, state) => StepPlayerScreen(
+              stepId: 'step-123',
+              gatingService: mockGatingService,
+            ),
+          ),
+        ],
       );
 
       return StringsScope(
@@ -65,7 +82,7 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('shows success snackbar on completion', (tester) async {
+    testWidgets('shows success snackbar and pops on completion', (tester) async {
       when(mockGatingService.completeStep('step-123')).thenAnswer(
         (_) async => const CompleteResult(
           success: true,
@@ -77,13 +94,10 @@ void main() {
       await tester.pumpWidget(createTestWidget());
 
       await tester.tap(find.byKey(const Key('step_player_complete_button')));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pumpAndSettle();
 
       expect(find.byType(SnackBar), findsOneWidget);
-      expect(find.byKey(const Key('step_player_snackbar_success')),
-          findsOneWidget);
-
+      expect(find.byKey(const Key('step_player_snackbar_success')), findsOneWidget);
       verify(mockGatingService.completeStep('step-123')).called(1);
     });
 

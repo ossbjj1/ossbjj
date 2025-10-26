@@ -33,7 +33,7 @@ class GatingService {
       if (raw is! Map) {
         _logger.w('Malformed gating response: non-map payload');
         return const GatingAccess(
-            allowed: false, reason: GatingReason.premiumRequired);
+            allowed: false, reason: GatingReason.authRequired);
       }
       final data = Map<String, dynamic>.from(raw as Map);
 
@@ -42,7 +42,7 @@ class GatingService {
 
       final bool allowed = allowedVal is bool ? allowedVal : false;
       final String reasonStr =
-          reasonVal is String ? reasonVal : 'premiumRequired';
+          reasonVal is String ? reasonVal : 'authRequired';
 
       final reason = _parseGatingReason(reasonStr);
       return GatingAccess(allowed: allowed, reason: reason);

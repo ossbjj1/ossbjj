@@ -40,7 +40,7 @@ function parseEnvRate(rateStr: string): RateLimitConfig {
   return { cap, windowSeconds };
 }
 
-// Helper: Upstash INCR + EXPIRE
+// Helper: Upstash rate-limit using pipeline with timeout
 async function upstashIncr(
   key: string,
   ttlSeconds: number,
@@ -49,24 +49,37 @@ async function upstashIncr(
   const token = Deno.env.get("UPSTASH_REDIS_REST_TOKEN");
   if (!url || !token) return null; // Upstash not configured
 
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 4000);
+
   try {
     const encKey = encodeURIComponent(key);
-    const incrResp = await fetch(`${url}/incr/${encKey}`, {
-      headers: { Authorization: `Bearer ${token}` },
+    // Use pipeline for atomic INCR + EXPIRE NX
+    const pipeBody = JSON.stringify({
+      pipeline: [
+        ["INCR", encKey],
+        ["EXPIRE", encKey, ttlSeconds, "NX"],
+      ],
     });
-    const incrData = await incrResp.json();
-    const count = incrData.result as number;
-
-    if (count === 1) {
-      // First increment, set TTL
-      await fetch(`${url}/expire/${encKey}/${ttlSeconds}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-    }
-    return count;
+    const pipeResp = await fetch(`${url}/pipeline`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: pipeBody,
+      signal: controller.signal,
+    });
+    if (!pipeResp.ok) throw new Error(`pipeline ${pipeResp.status}`);
+    const results = await pipeResp.json();
+    // results = { result: [ { result: number }, { result: 1|0 } ] }
+    const count = (results?.result?.[0]?.result as number) ?? null;
+    return typeof count === "number" ? count : null;
   } catch (e) {
-    console.error("Upstash error:", e);
+    console.error("Upstash pipeline error:", e);
     return null;
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
@@ -138,6 +151,14 @@ function log(
   console.log(JSON.stringify({ ts: new Date().toISOString(), event, level, ...fields }));
 }
 
+async function hashUserId(uid: string): Promise<string> {
+  const bytes = new TextEncoder().encode(uid);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
 serve(async (req) => {
   const reqId = crypto.randomUUID();
   const t0 = Date.now();
@@ -181,6 +202,7 @@ serve(async (req) => {
       log("auth_invalid", { reqId, ip, error: authError?.message }, "warn");
       return resp({ allowed: false, reason: "authRequired" }, 401, corsHeaders);
     }
+    const userHash = await hashUserId(user.id);
 
     // 2. Rate limiting (per user preferred, IP fallback)
     const userRateConfig = parseEnvRate(Deno.env.get("RL_USER_RATE") || "30/m");
@@ -192,7 +214,7 @@ serve(async (req) => {
 
     const userRL = await checkRateLimit(userKey, userRateConfig);
     if (!userRL.ok) {
-      log("rate_limited", { reqId, userId: user.id, scope: "user", retryAfter: userRL.retryAfter }, "warn");
+      log("rate_limited", { reqId, userIdHash: userHash, scope: "user", retryAfter: userRL.retryAfter }, "warn");
       return resp(
         { error: "rate_limited", retryAfter: userRL.retryAfter },
         429,
@@ -232,7 +254,7 @@ serve(async (req) => {
       .single();
 
     if (stepError || !stepData) {
-      log("step_not_found", { reqId, userId: user.id, techniqueStepId }, "warn");
+      log("step_not_found", { reqId, userIdHash: userHash, techniqueStepId }, "warn");
       return resp({ error: "not_found" }, 404, corsHeaders);
     }
 
@@ -244,7 +266,7 @@ serve(async (req) => {
       const durationMs = Date.now() - t0;
       log("gating_check_step_access", {
         reqId,
-        userId: user.id,
+        userIdHash: userHash,
         techniqueStepId,
         idx,
         decision: { allowed: true, reason: "free" },
@@ -262,7 +284,7 @@ serve(async (req) => {
       .maybeSingle();
 
     if (profileError) {
-      log("profile_fetch_error", { reqId, userId: user.id, error: profileError.message }, "error");
+      log("profile_fetch_error", { reqId, userIdHash: userHash, error: profileError.message }, "error");
       return resp({ error: "server_error" }, 500, corsHeaders);
     }
 
@@ -274,7 +296,7 @@ serve(async (req) => {
     const durationMs = Date.now() - t0;
     log("gating_check_step_access", {
       reqId,
-      userId: user.id,
+      userIdHash: userHash,
       techniqueStepId,
       idx,
       entitlement,

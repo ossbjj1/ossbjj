@@ -13,9 +13,10 @@ class RouterTestHelper {
   static GoRouter createMockRouter({
     required Widget Function(BuildContext context, GoRouterState state)
         homeBuilder,
+    String initialLocation = '/',
   }) {
     return GoRouter(
-      initialLocation: '/',
+      initialLocation: initialLocation,
       routes: [
         GoRoute(
           path: '/',

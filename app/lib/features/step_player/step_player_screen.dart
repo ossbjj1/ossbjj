@@ -35,7 +35,7 @@ class _StepPlayerScreenState extends State<StepPlayerScreen> {
         backgroundColor: DsColors.bgSurface,
         leading: IconButton(
           icon: const Icon(Icons.close),
-          onPressed: () => context.pop(),
+          onPressed: _isCompleting ? null : () => context.pop(),
         ),
       ),
       body: Padding(
