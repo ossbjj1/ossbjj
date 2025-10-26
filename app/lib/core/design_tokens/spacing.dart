@@ -16,3 +16,6 @@ class Spacing {
   static const double m = md;
   static const double l = lg;
 }
+
+/// Alias for brevity (Sprint 2).
+typedef DsSpacing = Spacing;

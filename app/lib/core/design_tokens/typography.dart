@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 /// Typography tokens for OSS.
 class TypographyTokens {
   const TypographyTokens._();
@@ -34,4 +36,27 @@ class FontFamilies {
   static const String primary = 'Inter';
   static const String display = 'Oswald';
   static const String monospace = 'RobotoMono';
+}
+
+/// Quick TextStyle presets for MVP (Sprint 2).
+class DsTypography {
+  const DsTypography._();
+
+  static const headlineLarge = TextStyle(
+    fontSize: TypographyTokens.size32,
+    fontWeight: FontWeight.bold,
+    height: TypographyTokens.lineHeightTight,
+  );
+
+  static const headlineMedium = TextStyle(
+    fontSize: TypographyTokens.size24,
+    fontWeight: FontWeight.w600,
+    height: TypographyTokens.lineHeightNormal,
+  );
+
+  static const bodyMedium = TextStyle(
+    fontSize: TypographyTokens.size16,
+    fontWeight: FontWeight.normal,
+    height: TypographyTokens.lineHeightNormal,
+  );
 }
