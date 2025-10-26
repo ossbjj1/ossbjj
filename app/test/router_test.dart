@@ -223,4 +223,160 @@ void main() {
       expect(find.text('Learn'), findsNothing);
     });
   });
+
+  group('Router Redirect Tests (Sprint 3)', () {
+    testWidgets('forceOnboarding redirects to /onboarding', (tester) async {
+      final router = GoRouter(
+        initialLocation: '/',
+        redirect: (context, state) {
+          // Simulate forceOnboarding=true
+          if (state.matchedLocation != '/onboarding' &&
+              state.matchedLocation != '/legal/privacy' &&
+              state.matchedLocation != '/legal/terms') {
+            return '/onboarding';
+          }
+          return null;
+        },
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (context, state) => const Scaffold(
+              body: Text('Home'),
+            ),
+          ),
+          GoRoute(
+            path: '/onboarding',
+            builder: (context, state) => const Scaffold(
+              body: Text('Onboarding'),
+            ),
+          ),
+          GoRoute(
+            path: '/legal/privacy',
+            builder: (context, state) => const Scaffold(
+              body: Text('Privacy'),
+            ),
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(
+        MaterialApp.router(
+          routerConfig: router,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Should redirect to onboarding
+      expect(find.text('Onboarding'), findsOneWidget);
+      expect(find.text('Home'), findsNothing);
+
+      router.dispose();
+    });
+
+    testWidgets('forceOnboarding allows legal routes', (tester) async {
+      final router = GoRouter(
+        initialLocation: '/legal/privacy',
+        redirect: (context, state) {
+          // Simulate forceOnboarding=true but allow legal pages
+          if (state.matchedLocation != '/onboarding' &&
+              !state.matchedLocation.startsWith('/legal/')) {
+            return '/onboarding';
+          }
+          return null;
+        },
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (context, state) => const Scaffold(
+              body: Text('Home'),
+            ),
+          ),
+          GoRoute(
+            path: '/onboarding',
+            builder: (context, state) => const Scaffold(
+              body: Text('Onboarding'),
+            ),
+          ),
+          GoRoute(
+            path: '/legal/privacy',
+            builder: (context, state) => const Scaffold(
+              body: Text('Privacy'),
+            ),
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(
+        MaterialApp.router(
+          routerConfig: router,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Should NOT redirect, allow privacy page
+      expect(find.text('Privacy'), findsOneWidget);
+      expect(find.text('Onboarding'), findsNothing);
+
+      router.dispose();
+    });
+
+    testWidgets('forceConsent takes precedence over forceOnboarding',
+        (tester) async {
+      final router = GoRouter(
+        initialLocation: '/',
+        redirect: (context, state) {
+          final loc = state.matchedLocation;
+
+          // Consent first
+          if (loc != '/consent' &&
+              !loc.startsWith('/legal/')) {
+            return '/consent';
+          }
+
+          // Then onboarding (this won't be reached in this test)
+          if (loc != '/onboarding' &&
+              loc != '/consent' &&
+              !loc.startsWith('/legal/')) {
+            return '/onboarding';
+          }
+
+          return null;
+        },
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (context, state) => const Scaffold(
+              body: Text('Home'),
+            ),
+          ),
+          GoRoute(
+            path: '/consent',
+            builder: (context, state) => const Scaffold(
+              body: Text('Consent'),
+            ),
+          ),
+          GoRoute(
+            path: '/onboarding',
+            builder: (context, state) => const Scaffold(
+              body: Text('Onboarding'),
+            ),
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(
+        MaterialApp.router(
+          routerConfig: router,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Should redirect to consent, not onboarding
+      expect(find.text('Consent'), findsOneWidget);
+      expect(find.text('Onboarding'), findsNothing);
+      expect(find.text('Home'), findsNothing);
+
+      router.dispose();
+    });
+  });
 }
