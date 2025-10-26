@@ -1,6 +1,22 @@
 import 'package:logger/logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+/// Thrown when user profile validation fails.
+class ProfileValidationException implements Exception {
+  ProfileValidationException(this.message);
+  final String message;
+  @override
+  String toString() => 'ProfileValidationException: $message';
+}
+
+/// Thrown when user is not authenticated for profile operations.
+class UserNotAuthenticatedException implements Exception {
+  UserNotAuthenticatedException(this.message);
+  final String message;
+  @override
+  String toString() => 'UserNotAuthenticatedException: $message';
+}
+
 /// User profile service for onboarding data (Sprint 3).
 class ProfileService {
   ProfileService({Logger? logger}) : _logger = logger ?? Logger();
@@ -33,11 +49,19 @@ class ProfileService {
   }
 
   /// Upsert user profile (create or update).
+  /// Validates required fields and ranges before persisting.
+  /// Throws ProfileValidationException if validation fails.
+  /// Throws UserNotAuthenticatedException if user not logged in.
   Future<void> upsert(UserProfile profile) async {
     try {
+      // Validate profile before any DB operations
+      _validateProfile(profile);
+
       final user = Supabase.instance.client.auth.currentUser;
       if (user == null) {
-        throw Exception('Cannot upsert profile: user not logged in');
+        throw UserNotAuthenticatedException(
+          'Cannot upsert profile: user not logged in',
+        );
       }
 
       final payload = profile.toUpsertJson(user.id);
@@ -47,6 +71,62 @@ class ProfileService {
     } catch (e, stackTrace) {
       _logger.e('Profile upsert failed', error: e, stackTrace: stackTrace);
       rethrow;
+    }
+  }
+
+  /// Validate user profile fields and ranges.
+  /// Throws ProfileValidationException on validation failure.
+  void _validateProfile(UserProfile profile) {
+    // Check required fields
+    if (profile.belt == null) {
+      const msg = 'Profile validation failed: belt is required';
+      _logger.e(msg);
+      throw ProfileValidationException(msg);
+    }
+    if (profile.expRange == null) {
+      const msg = 'Profile validation failed: expRange is required';
+      _logger.e(msg);
+      throw ProfileValidationException(msg);
+    }
+    if (profile.goalType == null) {
+      const msg = 'Profile validation failed: goalType is required';
+      _logger.e(msg);
+      throw ProfileValidationException(msg);
+    }
+
+    // Validate ranges
+    if (profile.weeklyGoal != null) {
+      if (profile.weeklyGoal! < 1 || profile.weeklyGoal! > 7) {
+        final msg =
+            'Profile validation failed: weeklyGoal must be between 1 and 7, got ${profile.weeklyGoal}';
+        _logger.e(msg);
+        throw ProfileValidationException(msg);
+      }
+    }
+
+    // Validate enum values
+    const validBelts = {'white', 'blue', 'purple', 'brown', 'black'};
+    if (!validBelts.contains(profile.belt)) {
+      final msg =
+          'Profile validation failed: invalid belt value "${profile.belt}"';
+      _logger.e(msg);
+      throw ProfileValidationException(msg);
+    }
+
+    const validExpRanges = {'beginner', 'intermediate', 'advanced'};
+    if (!validExpRanges.contains(profile.expRange)) {
+      final msg =
+          'Profile validation failed: invalid expRange value "${profile.expRange}"';
+      _logger.e(msg);
+      throw ProfileValidationException(msg);
+    }
+
+    const validGoalTypes = {'fundamentals', 'technique', 'strength', 'flexibility'};
+    if (!validGoalTypes.contains(profile.goalType)) {
+      final msg =
+          'Profile validation failed: invalid goalType value "${profile.goalType}"';
+      _logger.e(msg);
+      throw ProfileValidationException(msg);
     }
   }
 }

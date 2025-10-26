@@ -27,7 +27,6 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-
   Future<void> _handleLogout(BuildContext context) async {
     try {
       await widget.authService.signOut();

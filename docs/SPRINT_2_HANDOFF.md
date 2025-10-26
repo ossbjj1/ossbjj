@@ -305,18 +305,18 @@ git checkout sprint-2/consent-auth
 git checkout -b sprint-3/onboarding-settings
 ```
 
-3. **Run baseline:**
+1. **Run baseline:**
 
 ```bash
 cd app && flutter pub get && flutter analyze && flutter test
 ```
 
-4. **Read roadmap:**
+1. **Read roadmap:**
    - docs/roadmap/OSS_ROADMAP_S0-S4.md (Sprint 3 section)
    - docs/OSS_PRODUCT_CONTEXT.md (onboarding flows)
    - docs/i18n_keys.json (microcopy patterns)
 
-5. **Start Warp chat with this handoff as context** → builds Sprint 3 screens + logic
+1. **Start Warp chat with this handoff as context** → builds Sprint 3 screens + logic
 
 ---
 
