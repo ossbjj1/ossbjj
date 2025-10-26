@@ -56,5 +56,15 @@ void main() {
       expect(profile.isComplete, true);
       expect(profile.ageGroup, null);
     });
+
+    test('isComplete returns false when goalType missing', () {
+      const profile = UserProfile(
+        belt: 'blue',
+        expRange: 'intermediate',
+        weeklyGoal: 3,
+      );
+
+      expect(profile.isComplete, false);
+    });
   });
 }

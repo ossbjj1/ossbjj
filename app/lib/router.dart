@@ -48,7 +48,6 @@ GoRouter createRouter({
   };
 
   return GoRouter(
-    initialLocation: AppRoutes.homePath,
     redirect: (context, state) {
       final loc = state.matchedLocation;
 

@@ -23,7 +23,7 @@ void main() async {
   final audioService = AudioService();
   final progressService = ProgressService();
 
-  // Load consent state
+  // Load consent state (TODO: sync with server user_profile.consent_analytics on login)
   final consentState = await consentService.load();
 
   // Load locale

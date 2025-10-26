@@ -5,19 +5,27 @@ import 'package:oss/core/navigation/routes.dart';
 import 'package:oss/core/design_tokens/colors.dart';
 import 'package:oss/core/l10n/strings.dart';
 
+/// Helper to wrap widgets with StringsScope for testing.
+Widget _wrappedWithStringsScope({
+  required Widget child,
+  ValueNotifier<Locale>? localeNotifier,
+}) {
+  return StringsScope(
+    localeNotifier: localeNotifier ?? ValueNotifier(const Locale('en')),
+    child: MaterialApp(
+      home: child,
+    ),
+  );
+}
+
 void main() {
   group('AppBottomNav Widget Tests (Sprint 1)', () {
     testWidgets('renders all 4 tabs', (tester) async {
-      final localeNotifier = ValueNotifier(const Locale('en'));
-
       await tester.pumpWidget(
-        StringsScope(
-          localeNotifier: localeNotifier,
-          child: const MaterialApp(
-            home: Scaffold(
-              bottomNavigationBar: AppBottomNav(
-                currentLocation: AppRoutes.homePath,
-              ),
+        _wrappedWithStringsScope(
+          child: const Scaffold(
+            bottomNavigationBar: AppBottomNav(
+              currentLocation: AppRoutes.homePath,
             ),
           ),
         ),
@@ -30,16 +38,11 @@ void main() {
     });
 
     testWidgets('highlights active tab', (tester) async {
-      final localeNotifier = ValueNotifier(const Locale('en'));
-
       await tester.pumpWidget(
-        StringsScope(
-          localeNotifier: localeNotifier,
-          child: const MaterialApp(
-            home: Scaffold(
-              bottomNavigationBar: AppBottomNav(
-                currentLocation: AppRoutes.learnPath,
-              ),
+        _wrappedWithStringsScope(
+          child: const Scaffold(
+            bottomNavigationBar: AppBottomNav(
+              currentLocation: AppRoutes.learnPath,
             ),
           ),
         ),
@@ -60,16 +63,11 @@ void main() {
     });
 
     testWidgets('tap triggers navigation', (tester) async {
-      final localeNotifier = ValueNotifier(const Locale('en'));
-
       await tester.pumpWidget(
-        StringsScope(
-          localeNotifier: localeNotifier,
-          child: const MaterialApp(
-            home: Scaffold(
-              bottomNavigationBar: AppBottomNav(
-                currentLocation: AppRoutes.homePath,
-              ),
+        _wrappedWithStringsScope(
+          child: const Scaffold(
+            bottomNavigationBar: AppBottomNav(
+              currentLocation: AppRoutes.homePath,
             ),
           ),
         ),
@@ -81,16 +79,11 @@ void main() {
     });
 
     testWidgets('touch targets are accessible (≥44pt)', (tester) async {
-      final localeNotifier = ValueNotifier(const Locale('en'));
-
       await tester.pumpWidget(
-        StringsScope(
-          localeNotifier: localeNotifier,
-          child: const MaterialApp(
-            home: Scaffold(
-              bottomNavigationBar: AppBottomNav(
-                currentLocation: AppRoutes.homePath,
-              ),
+        _wrappedWithStringsScope(
+          child: const Scaffold(
+            bottomNavigationBar: AppBottomNav(
+              currentLocation: AppRoutes.homePath,
             ),
           ),
         ),

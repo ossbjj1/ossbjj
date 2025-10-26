@@ -78,7 +78,6 @@ class UserProfile {
     );
   }
 
-
   /// Convert profile to JSON for toJson() serialization.
   Map<String, dynamic> toJson() {
     return {
@@ -101,5 +100,8 @@ class UserProfile {
   /// Check if profile is complete (required fields filled including goalType).
   /// ageGroup is optional as per product design.
   bool get isComplete =>
-      belt != null && expRange != null && weeklyGoal != null && goalType != null;
+      belt != null &&
+      expRange != null &&
+      weeklyGoal != null &&
+      goalType != null;
 }

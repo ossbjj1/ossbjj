@@ -2,8 +2,8 @@
 
 **Status:** ✅ Complete
 **Branch:** sprint-2/consent-auth
-**PR:** #5 (https://github.com/ossbjj1/ossbjj/pull/5)
-**Issue Summary:** #6 (https://github.com/ossbjj1/ossbjj/issues/6)
+**PR:** [#5](https://github.com/ossbjj1/ossbjj/pull/5)
+**Issue Summary:** [#6](https://github.com/ossbjj1/ossbjj/issues/6)
 
 ---
 
@@ -47,21 +47,24 @@
 ## Implementation Details
 
 ### ConsentService (core/services/consent_service.dart)
-```
+
+```dart
 - Properties: analytics (bool), media (bool), shown (bool)
 - Methods: load(), setAnalytics(bool), setMedia(bool), markShown()
 - Persists to SharedPreferences; defaults false
 ```
 
 ### AnalyticsService (core/services/analytics_service.dart)
-```
+
+```dart
 - initIfAllowed(analyticsAllowed: bool) — gate for Sentry/PostHog init
 - No telemetry until consent granted (idempotent)
 - PII stripping in Sentry beforeSend hook
 ```
 
 ### AuthService (core/services/auth_service.dart)
-```
+
+```dart
 - Supabase integration: signUp, signIn, signOut, resetPassword
 - Error mapping via regex on Supabase AuthException
 - AuthResult factory (success/failure) — explicit error surfacing
@@ -74,13 +77,15 @@
 - **ResetPasswordScreen:** Email input; proper validation message (AuthStrings.errEmailEmpty); send link CTA
 
 ### Auth Strings (core/strings/auth_strings.dart)
-```
+
+```dart
 - Errors: errEmailEmpty, errEmailInvalid, errPasswordInvalid, errLoginUnavailable, errGeneric
 - All Eagle-Fang tone (imperative, respectful, PG-13)
 ```
 
 ### Router Configuration (router.dart)
-```
+
+```dart
 - createRouter(forceConsent, consentService, analyticsService, authService)
 - Consent redirect exempts legal routes (GDPR compliance)
 - Shell route: 4 tabs + hide-rules for modal/auth/legal/future routes
@@ -89,7 +94,8 @@
 ```
 
 ### Settings Screen
-```
+
+```dart
 - List of menu items: Privacy settings, Legal links, Logout (conditional)
 - Navigation to consent (/consent), privacy (/privacy), terms (/terms)
 - Auth-aware: logout only shown if currentUser != null
@@ -135,6 +141,7 @@
 - app/test/widgets/bottom_nav_test.dart — 4 tests (nav rendering, active state, a11y)
 
 ### CI/CD Status
+
 - GitHub Actions: flutter format, analyze, test ✅
 - Pre-commit hooks: dart-format ✅
 - Pre-push hooks: no additional checks
@@ -167,7 +174,7 @@
 
 ## File Structure (Sprint 2 Final)
 
-```
+```dart
 app/lib/
 ├── core/
 │   ├── services/
@@ -261,7 +268,8 @@ app/test/
 ## Environment Setup (for next chat)
 
 ### .env File (app/.env)
-```
+
+```bash
 SUPABASE_URL=<your-supabase-url>
 SUPABASE_ANON_KEY=<your-anon-key>
 SENTRY_DSN=<optional>
@@ -269,10 +277,12 @@ POSTHOG_API_KEY=<optional>
 ```
 
 ### Supabase Schema (ready for Sprint 3)
+
 - user_profile table (id, user_id, belt, experience, weekly_goal, goal_type, age_group, created_at, updated_at)
 - RLS: SELECT/INSERT/UPDATE own rows only (auth.uid())
 
 ### Flutter & CI
+
 - Flutter 3.35.5 stable
 - Dart 3.9.2
 - CI: github-actions.yml runs format/analyze/test on PR
@@ -283,20 +293,23 @@ POSTHOG_API_KEY=<optional>
 ## How to Resume in Sprint 3
 
 1. **Checkout branch:**
-   ```bash
-   git fetch origin sprint-2/consent-auth
-   git checkout sprint-2/consent-auth
-   ```
+
+```bash
+git fetch origin sprint-2/consent-auth
+git checkout sprint-2/consent-auth
+```
 
 2. **Create Sprint 3 branch:**
-   ```bash
-   git checkout -b sprint-3/onboarding-settings
-   ```
+
+```bash
+git checkout -b sprint-3/onboarding-settings
+```
 
 3. **Run baseline:**
-   ```bash
-   cd app && flutter pub get && flutter analyze && flutter test
-   ```
+
+```bash
+cd app && flutter pub get && flutter analyze && flutter test
+```
 
 4. **Read roadmap:**
    - docs/roadmap/OSS_ROADMAP_S0-S4.md (Sprint 3 section)
@@ -335,6 +348,6 @@ If all pass → **ready for Sprint 3**.
 
 ---
 
-**Prepared by:** Warp Agent (Sprint 2 completion)
-**Date:** 2025-10-26 16:44 UTC
+**Prepared by:** Warp Agent (Sprint 2 completion)  
+**Date:** 2025-10-26 16:44 UTC  
 **Status:** Ready for handoff

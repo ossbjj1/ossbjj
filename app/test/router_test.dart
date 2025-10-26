@@ -256,8 +256,15 @@ void main() {
               body: Text('Privacy'),
             ),
           ),
+          GoRoute(
+            path: '/legal/terms',
+            builder: (context, state) => const Scaffold(
+              body: Text('Terms'),
+            ),
+          ),
         ],
       );
+      addTearDown(router.dispose);
 
       await tester.pumpWidget(
         MaterialApp.router(
@@ -269,8 +276,6 @@ void main() {
       // Should redirect to onboarding
       expect(find.text('Onboarding'), findsOneWidget);
       expect(find.text('Home'), findsNothing);
-
-      router.dispose();
     });
 
     testWidgets('forceOnboarding allows legal routes', (tester) async {
@@ -303,8 +308,15 @@ void main() {
               body: Text('Privacy'),
             ),
           ),
+          GoRoute(
+            path: '/legal/terms',
+            builder: (context, state) => const Scaffold(
+              body: Text('Terms'),
+            ),
+          ),
         ],
       );
+      addTearDown(router.dispose);
 
       await tester.pumpWidget(
         MaterialApp.router(
@@ -316,8 +328,6 @@ void main() {
       // Should NOT redirect, allow privacy page
       expect(find.text('Privacy'), findsOneWidget);
       expect(find.text('Onboarding'), findsNothing);
-
-      router.dispose();
     });
 
     testWidgets('forceConsent takes precedence over forceOnboarding',
@@ -362,6 +372,7 @@ void main() {
           ),
         ],
       );
+      addTearDown(router.dispose);
 
       await tester.pumpWidget(
         MaterialApp.router(
@@ -374,8 +385,6 @@ void main() {
       expect(find.text('Consent'), findsOneWidget);
       expect(find.text('Onboarding'), findsNothing);
       expect(find.text('Home'), findsNothing);
-
-      router.dispose();
     });
   });
 }

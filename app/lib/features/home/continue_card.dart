@@ -103,8 +103,7 @@ class _ContinueCardState extends State<ContinueCard> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor:
-                        Theme.of(context).colorScheme.onPrimary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                   ),
                   child: Text(
                     hint != null ? t.ctaContinue : t.onboardingSave,
