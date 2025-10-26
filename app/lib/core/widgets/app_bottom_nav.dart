@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../navigation/routes.dart';
 import '../design_tokens/colors.dart';
-import '../l10n/app_strings.dart';
+import '../l10n/strings.dart';
 
 /// Bottom navigation bar for main app tabs.
 ///
@@ -19,6 +19,8 @@ class AppBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = StringsScope.of(context);
+
     return Container(
       height: 64, // Sufficient for touch targets + padding
       decoration: const BoxDecoration(
@@ -31,25 +33,25 @@ class AppBottomNav extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _NavItem(
-            label: AppStrings.tabHome,
+            label: t.tabHome,
             icon: Icons.home_outlined,
             route: AppRoutes.homePath,
             isActive: currentLocation == AppRoutes.homePath,
           ),
           _NavItem(
-            label: AppStrings.tabLearn,
+            label: t.tabLearn,
             icon: Icons.school_outlined,
             route: AppRoutes.learnPath,
             isActive: currentLocation == AppRoutes.learnPath,
           ),
           _NavItem(
-            label: AppStrings.tabStats,
+            label: t.tabStats,
             icon: Icons.bar_chart_outlined,
             route: AppRoutes.statsPath,
             isActive: currentLocation == AppRoutes.statsPath,
           ),
           _NavItem(
-            label: AppStrings.tabSettings,
+            label: t.tabSettings,
             icon: Icons.settings_outlined,
             route: AppRoutes.settingsPath,
             isActive: currentLocation == AppRoutes.settingsPath,

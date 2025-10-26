@@ -1,25 +1,35 @@
 import 'package:flutter/material.dart';
 import '../../core/design_tokens/colors.dart';
-import '../../core/l10n/app_strings.dart';
+import '../../core/l10n/strings.dart';
+import '../../core/services/progress_service.dart';
+import 'continue_card.dart';
 
-/// Home Screen (Sprint 1 stub).
+/// Home Screen (Sprint 3).
 ///
-/// Future: Hero card "Continue", Content Roadmap, Testimonials.
+/// MVP: Continue card.
+/// Future: Content Roadmap, Testimonials.
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({
+    super.key,
+    required this.progressService,
+  });
+
+  final ProgressService progressService;
 
   @override
   Widget build(BuildContext context) {
+    final t = StringsScope.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text(AppStrings.navTitleHome),
+        title: Text(t.navTitleHome),
         backgroundColor: DsColors.bgSurface,
       ),
-      body: const Center(
-        child: Text(
-          'Home Screen\n(Sprint 1 stub)',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 16, color: DsColors.textSecondary),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            ContinueCard(progressService: progressService),
+          ],
         ),
       ),
     );

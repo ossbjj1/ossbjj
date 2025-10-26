@@ -80,7 +80,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
     if (result.isSuccess && mounted) {
       _showSuccess('Account created! Check your email to verify.');
-      context.go(AppRoutes.homePath);
+      context.go(AppRoutes.onboardingPath);
     } else if (result.isFailure && mounted) {
       _showError(result.error ?? AuthStrings.errGeneric);
     }

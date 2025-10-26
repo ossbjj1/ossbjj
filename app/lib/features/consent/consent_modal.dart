@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/design_tokens/colors.dart';
 import '../../core/design_tokens/spacing.dart';
 import '../../core/design_tokens/typography.dart';
-import '../../core/l10n/app_strings.dart';
+import '../../core/l10n/strings.dart';
 import '../../core/navigation/routes.dart';
 import '../../core/services/consent_service.dart';
 import '../../core/services/analytics_service.dart';
@@ -62,9 +62,11 @@ class _ConsentModalState extends State<ConsentModal> {
 
   @override
   Widget build(BuildContext context) {
+    final t = StringsScope.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text(AppStrings.consentTitle),
+        title: Text(t.consentTitle),
         backgroundColor: DsColors.bgSurface,
         leading: IconButton(
           icon: const Icon(Icons.close),
@@ -78,14 +80,14 @@ class _ConsentModalState extends State<ConsentModal> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                AppStrings.consentHeadline,
+                t.consentHeadline,
                 style: DsTypography.headlineMedium.copyWith(
                   color: DsColors.textPrimary,
                 ),
               ),
               const SizedBox(height: DsSpacing.xs),
               Text(
-                AppStrings.consentSubhead,
+                t.consentSubhead,
                 style: DsTypography.bodyMedium.copyWith(
                   color: DsColors.textSecondary,
                 ),
@@ -94,15 +96,15 @@ class _ConsentModalState extends State<ConsentModal> {
               SwitchListTile(
                 value: _analytics,
                 onChanged: (value) => setState(() => _analytics = value),
-                title: const Text(AppStrings.consentAnalyticsLabel),
-                subtitle: const Text(AppStrings.consentAnalyticsSub),
+                title: Text(t.consentAnalyticsLabel),
+                subtitle: Text(t.consentAnalyticsSub),
                 activeTrackColor: DsColors.brandRed,
               ),
               SwitchListTile(
                 value: _media,
                 onChanged: (value) => setState(() => _media = value),
-                title: const Text(AppStrings.consentMediaLabel),
-                subtitle: const Text(AppStrings.consentMediaSub),
+                title: Text(t.consentMediaLabel),
+                subtitle: Text(t.consentMediaSub),
                 activeTrackColor: DsColors.brandRed,
               ),
               const SizedBox(height: DsSpacing.md),
@@ -111,11 +113,11 @@ class _ConsentModalState extends State<ConsentModal> {
                 children: [
                   TextButton(
                     onPressed: () => context.go(AppRoutes.privacyPath),
-                    child: const Text(AppStrings.legalPrivacy),
+                    child: Text(t.legalPrivacy),
                   ),
                   TextButton(
                     onPressed: () => context.go(AppRoutes.termsPath),
-                    child: const Text(AppStrings.legalTerms),
+                    child: Text(t.legalTerms),
                   ),
                 ],
               ),
@@ -140,7 +142,7 @@ class _ConsentModalState extends State<ConsentModal> {
                             color: DsColors.textPrimary,
                           ),
                         )
-                      : const Text(AppStrings.consentSave),
+                      : Text(t.consentSave),
                 ),
               ),
             ],

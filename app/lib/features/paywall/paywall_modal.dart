@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/design_tokens/colors.dart';
-import '../../core/l10n/app_strings.dart';
+import '../../core/l10n/strings.dart';
 
 /// Paywall Modal (Sprint 1 stub).
 ///
@@ -10,9 +10,11 @@ class PaywallModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = StringsScope.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text(AppStrings.paywallTitle),
+        title: Text(t.paywallTitle),
         backgroundColor: DsColors.bgSurface,
         leading: IconButton(
           icon: const Icon(Icons.close),

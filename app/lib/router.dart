@@ -6,6 +6,10 @@ import 'core/design_tokens/colors.dart';
 import 'core/services/consent_service.dart';
 import 'core/services/analytics_service.dart';
 import 'core/services/auth_service.dart';
+import 'core/services/profile_service.dart';
+import 'core/services/locale_service.dart';
+import 'core/services/audio_service.dart';
+import 'core/services/progress_service.dart';
 import 'features/home/home_screen.dart';
 import 'features/learn/learn_screen.dart';
 import 'features/stats/stats_screen.dart';
@@ -17,19 +21,25 @@ import 'features/auth/signup_screen.dart';
 import 'features/auth/reset_password_screen.dart';
 import 'features/legal/privacy_screen.dart';
 import 'features/legal/terms_screen.dart';
+import 'features/onboarding/onboarding_screen.dart';
 
-/// Main router configuration for OSS app (Sprint 2).
+/// Main router configuration for OSS app (Sprint 3).
 ///
 /// Shell routes (with bottom nav): Home, Learn, Stats, Settings.
 /// Modal/Auth/Legal routes (fullscreen, no bottom nav): Consent, Paywall, Login, Signup, etc.
-/// Future routes (Sprint 5+): Technique, Step Player, Onboarding.
+/// Onboarding (Sprint 3).
 ///
-/// Factory pattern: createRouter accepts service instances and consent state.
+/// Factory pattern: createRouter accepts service instances and forced states.
 GoRouter createRouter({
   required bool forceConsent,
+  required bool forceOnboarding,
   required ConsentService consentService,
   required AnalyticsService analyticsService,
   required AuthService authService,
+  required ProfileService profileService,
+  required LocaleService localeService,
+  required AudioService audioService,
+  required ProgressService progressService,
 }) {
   // Legal routes exempt from consent redirect (GDPR legal-page access).
   const legalRoutesWhitelist = {
@@ -40,13 +50,23 @@ GoRouter createRouter({
   return GoRouter(
     initialLocation: AppRoutes.homePath,
     redirect: (context, state) {
+      final loc = state.matchedLocation;
+
       // Force consent modal on first launch, but allow legal pages
       if (forceConsent &&
-          state.matchedLocation != AppRoutes.consentPath &&
-          !legalRoutesWhitelist
-              .any((route) => state.matchedLocation.startsWith(route))) {
+          loc != AppRoutes.consentPath &&
+          !legalRoutesWhitelist.any((route) => loc.startsWith(route))) {
         return AppRoutes.consentPath;
       }
+
+      // Force onboarding after consent, but allow legal pages
+      if (forceOnboarding &&
+          loc != AppRoutes.onboardingPath &&
+          loc != AppRoutes.consentPath &&
+          !legalRoutesWhitelist.any((route) => loc.startsWith(route))) {
+        return AppRoutes.onboardingPath;
+      }
+
       return null;
     },
     routes: [
@@ -65,7 +85,9 @@ GoRouter createRouter({
           GoRoute(
             path: AppRoutes.homePath,
             name: AppRoutes.homeName,
-            builder: (context, state) => const HomeScreen(),
+            builder: (context, state) => HomeScreen(
+              progressService: progressService,
+            ),
           ),
           GoRoute(
             path: AppRoutes.learnPath,
@@ -80,8 +102,11 @@ GoRouter createRouter({
           GoRoute(
             path: AppRoutes.settingsPath,
             name: AppRoutes.settingsName,
-            builder: (context, state) =>
-                SettingsScreen(authService: authService),
+            builder: (context, state) => SettingsScreen(
+              authService: authService,
+              localeService: localeService,
+              audioService: audioService,
+            ),
           ),
         ],
       ),
@@ -151,8 +176,8 @@ GoRouter createRouter({
       GoRoute(
         path: AppRoutes.onboardingPath,
         name: AppRoutes.onboardingName,
-        builder: (context, state) => const _PlaceholderScreen(
-          title: 'Onboarding (Sprint 3)',
+        builder: (context, state) => OnboardingScreen(
+          profileService: profileService,
         ),
       ),
     ],
