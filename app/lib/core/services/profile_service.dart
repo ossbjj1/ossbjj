@@ -3,9 +3,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// User profile service for onboarding data (Sprint 3).
 class ProfileService {
-  ProfileService();
+  ProfileService({Logger? logger}) : _logger = logger ?? Logger();
 
-  final _logger = Logger();
+  final Logger _logger;
 
   /// Fetch current user's profile.
   Future<UserProfile?> fetch() async {
