@@ -22,6 +22,7 @@ Replaces client-side entitlement checks with server-side validation. Prevents by
 ## API Contract
 
 ### Request
+
 ```bash
 POST /gating_check_step_access
 Authorization: Bearer <JWT>
@@ -34,6 +35,7 @@ Content-Type: application/json
 ```
 
 ### Response (200 OK)
+
 ```json
 {
   "allowed": true,
@@ -42,6 +44,7 @@ Content-Type: application/json
 ```
 
 ### Error Responses
+
 - `400`: `{"error": "bad_request"}` - Missing `techniqueStepId`
 - `401`: `{"allowed": false, "reason": "authRequired"}` - Invalid/missing JWT
 - `403`: `{"error": "origin_forbidden"}` - CORS origin not whitelisted
@@ -96,14 +99,16 @@ curl -H "Origin: https://evil.com" ...  # → 403
 > Datenschutz: Niemals rohe User‑IDs an Sentry/PostHog senden. Nur pseudonyme IDs (z. B. hash(userId)). Telemetrie nur mit consent_analytics und bestehender DPA aktivieren.
 
 ### Structured Logs (JSON)
+
 All logs include:
+
 ```json
 {
   "ts": "2025-10-26T19:45:00.123Z",
   "event": "gating_check_step_access",
   "level": "info",
   "reqId": "uuid",
-  "userId": "user-uuid",
+  "userIdHash": "a1b2c3d4...",
   "techniqueStepId": "step-uuid",
   "idx": 3,
   "entitlement": "premium",
@@ -113,6 +118,7 @@ All logs include:
 ```
 
 ### Monitoring Queries (Supabase Logs Dashboard)
+
 ```sql
 -- Rate limit violations (last hour)
 SELECT count(*) FROM logs

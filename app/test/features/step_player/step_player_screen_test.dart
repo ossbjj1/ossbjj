@@ -82,7 +82,8 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('shows success snackbar and pops on completion', (tester) async {
+    testWidgets('shows success snackbar and pops on completion',
+        (tester) async {
       when(mockGatingService.completeStep('step-123')).thenAnswer(
         (_) async => const CompleteResult(
           success: true,
@@ -97,7 +98,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(SnackBar), findsOneWidget);
-      expect(find.byKey(const Key('step_player_snackbar_success')), findsOneWidget);
+      expect(find.byKey(const Key('step_player_snackbar_success')),
+          findsOneWidget);
       verify(mockGatingService.completeStep('step-123')).called(1);
     });
 

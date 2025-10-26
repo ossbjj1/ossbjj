@@ -9,6 +9,15 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 type GatingReason = "free" | "premium" | "premiumRequired" | "authRequired";
 type Json = Record<string, unknown>;
 
+// Helper: Hash user ID for privacy (SHA-256)
+async function hashUserId(uid: string): Promise<string> {
+  const bytes = new TextEncoder().encode(uid);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest))
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
 interface CheckAccessRequest {
   techniqueStepId: string;
 }
@@ -162,10 +171,15 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const authHeader = req.headers.get("Authorization");
+    // Validate Supabase env vars upfront
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+    if (!supabaseUrl || !supabaseAnonKey) {
+      log("server_config_error", { reqId, ip, error: "SUPABASE_URL or SUPABASE_ANON_KEY missing" }, "error");
+      return resp({ error: "server_error", detail: "server misconfigured" }, 500, corsHeaders);
+    }
 
+    const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       log("auth_required", { reqId, ip }, "warn");
       return resp({ allowed: false, reason: "authRequired" }, 401, corsHeaders);
@@ -182,6 +196,8 @@ serve(async (req) => {
       return resp({ allowed: false, reason: "authRequired" }, 401, corsHeaders);
     }
 
+    const userIdHash = await hashUserId(user.id);
+
     // 2. Rate limiting (per user preferred, IP fallback)
     const userRateConfig = parseEnvRate(Deno.env.get("RL_USER_RATE") || "30/m");
     const ipRateConfig = parseEnvRate(Deno.env.get("RL_IP_RATE") || "60/m");
@@ -192,7 +208,7 @@ serve(async (req) => {
 
     const userRL = await checkRateLimit(userKey, userRateConfig);
     if (!userRL.ok) {
-      log("rate_limited", { reqId, userId: user.id, scope: "user", retryAfter: userRL.retryAfter }, "warn");
+      log("rate_limited", { reqId, userIdHash, scope: "user", retryAfter: userRL.retryAfter }, "warn");
       return resp(
         { error: "rate_limited", retryAfter: userRL.retryAfter },
         429,
@@ -215,12 +231,12 @@ serve(async (req) => {
     try {
       body = await req.json();
     } catch (e) {
-      log("bad_request", { reqId, userId: user.id, parseError: String(e) }, "warn");
+      log("bad_request", { reqId, userIdHash, parseError: String(e) }, "warn");
       return resp({ error: "bad_request" }, 400, corsHeaders);
     }
     const techniqueStepId = (body as Record<string, unknown>)?.["techniqueStepId"];
     if (typeof techniqueStepId !== "string" || techniqueStepId.length === 0) {
-      log("bad_request", { reqId, userId: user.id, reason: "missing_or_invalid_stepId" }, "warn");
+      log("bad_request", { reqId, userIdHash, reason: "missing_or_invalid_stepId" }, "warn");
       return resp({ error: "bad_request" }, 400, corsHeaders);
     }
 
@@ -232,7 +248,7 @@ serve(async (req) => {
       .single();
 
     if (stepError || !stepData) {
-      log("step_not_found", { reqId, userId: user.id, techniqueStepId }, "warn");
+      log("step_not_found", { reqId, userIdHash, techniqueStepId }, "warn");
       return resp({ error: "not_found" }, 404, corsHeaders);
     }
 
@@ -244,7 +260,7 @@ serve(async (req) => {
       const durationMs = Date.now() - t0;
       log("gating_check_step_access", {
         reqId,
-        userId: user.id,
+        userIdHash,
         techniqueStepId,
         idx,
         decision: { allowed: true, reason: "free" },
@@ -262,7 +278,7 @@ serve(async (req) => {
       .maybeSingle();
 
     if (profileError) {
-      log("profile_fetch_error", { reqId, userId: user.id, error: profileError.message }, "error");
+      log("profile_fetch_error", { reqId, userIdHash, error: profileError.message }, "error");
       return resp({ error: "server_error" }, 500, corsHeaders);
     }
 
@@ -274,7 +290,7 @@ serve(async (req) => {
     const durationMs = Date.now() - t0;
     log("gating_check_step_access", {
       reqId,
-      userId: user.id,
+      userIdHash,
       techniqueStepId,
       idx,
       entitlement,

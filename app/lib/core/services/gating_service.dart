@@ -41,8 +41,7 @@ class GatingService {
       final reasonVal = data['reason'];
 
       final bool allowed = allowedVal is bool ? allowedVal : false;
-      final String reasonStr =
-          reasonVal is String ? reasonVal : 'authRequired';
+      final String reasonStr = reasonVal is String ? reasonVal : 'authRequired';
 
       final reason = _parseGatingReason(reasonStr);
       return GatingAccess(allowed: allowed, reason: reason);
