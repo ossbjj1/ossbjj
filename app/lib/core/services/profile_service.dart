@@ -121,7 +121,12 @@ class ProfileService {
       throw ProfileValidationException(msg);
     }
 
-    const validGoalTypes = {'fundamentals', 'technique', 'strength', 'flexibility'};
+    const validGoalTypes = {
+      'fundamentals',
+      'technique',
+      'strength',
+      'flexibility'
+    };
     if (!validGoalTypes.contains(profile.goalType)) {
       final msg =
           'Profile validation failed: invalid goalType value "${profile.goalType}"';
