@@ -22,9 +22,11 @@ void main() {
 
     test('AuthResult factories work correctly', () {
       final success = AuthResult.success(user: null);
-      expect(success.isSuccess, true); // success flag set
+      expect(success.isSuccess, true);
       expect(success.isFailure, false);
       expect(success.success, true);
+      // Note: success with null user is valid per current design;
+      // integration tests should verify signUp/signIn return non-null users
 
       final failure = AuthResult.failure('test error');
       expect(failure.isSuccess, false);
@@ -32,5 +34,8 @@ void main() {
       expect(failure.error, 'test error');
       expect(failure.success, false);
     });
+
+    // TODO: Add integration tests for error mapping via signIn/signUp flows
+    // to validate _mapAuthError produces expected user-facing messages.
   });
 }

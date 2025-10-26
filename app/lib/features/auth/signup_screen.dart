@@ -32,17 +32,42 @@ class _SignupScreenState extends State<SignupScreen> {
     super.dispose();
   }
 
+  bool _isValidEmail(String email) {
+    final emailRegex =
+        RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+    return emailRegex.hasMatch(email);
+  }
+
+  bool _hasPasswordComplexity(String password) {
+    // Require at least 8 chars and 3 of: uppercase, lowercase, digit, special
+    if (password.length < 8) return false;
+    int classCount = 0;
+    if (RegExp(r'[A-Z]').hasMatch(password)) classCount++;
+    if (RegExp(r'[a-z]').hasMatch(password)) classCount++;
+    if (RegExp(r'[0-9]').hasMatch(password)) classCount++;
+    if (RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password)) classCount++;
+    return classCount >= 3;
+  }
+
   Future<void> _handleSignup() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
+    final confirmPassword =
+        _passwordController.text; // TODO: add separate field
 
     if (email.isEmpty || password.isEmpty) {
       _showError('Please enter email and password');
       return;
     }
 
-    if (password.length < 6) {
-      _showError('Password must be at least 6 characters');
+    if (!_isValidEmail(email)) {
+      _showError(AuthStrings.errEmailInvalid);
+      return;
+    }
+
+    if (!_hasPasswordComplexity(password)) {
+      _showError(
+          'Password must be 8+ chars with uppercase, lowercase, digit, and special character');
       return;
     }
 

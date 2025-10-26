@@ -49,6 +49,7 @@ Changed Files
 - app/windows/runner/main.cpp
 
 How to run locally
+
 ```bash path=null start=null
 cd app
 flutter pub get

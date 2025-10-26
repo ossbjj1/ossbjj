@@ -40,7 +40,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     final email = _emailController.text.trim();
 
     if (email.isEmpty) {
-      _showError(AppStrings.ctaContinue);
+      _showError(AuthStrings.errEmailEmpty);
       return;
     }
 
@@ -82,7 +82,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Colors.green,
+        backgroundColor: DsColors.stateSuccess,
       ),
     );
   }

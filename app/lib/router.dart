@@ -31,11 +31,20 @@ GoRouter createRouter({
   required AnalyticsService analyticsService,
   required AuthService authService,
 }) {
+  // Legal routes exempt from consent redirect (GDPR legal-page access).
+  const legalRoutesWhitelist = {
+    AppRoutes.privacyPath,
+    AppRoutes.termsPath,
+  };
+
   return GoRouter(
     initialLocation: AppRoutes.homePath,
     redirect: (context, state) {
-      // Force consent modal on first launch
-      if (forceConsent && state.matchedLocation != AppRoutes.consentPath) {
+      // Force consent modal on first launch, but allow legal pages
+      if (forceConsent &&
+          state.matchedLocation != AppRoutes.consentPath &&
+          !legalRoutesWhitelist
+              .any((route) => state.matchedLocation.startsWith(route))) {
         return AppRoutes.consentPath;
       }
       return null;
