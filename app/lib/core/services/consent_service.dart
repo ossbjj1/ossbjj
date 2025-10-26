@@ -123,7 +123,8 @@ class ConsentService {
 
       // Validate: response should contain the updated row
       if (response.isEmpty) {
-        throw Exception('Server consent UPDATE affected no rows (row may have been deleted)');
+        throw Exception(
+            'Server consent UPDATE affected no rows (row may have been deleted)');
       }
 
       _logger.i('Server consent updated: $value');
@@ -134,6 +135,7 @@ class ConsentService {
       rethrow;
     }
   }
+
   /// Sync analytics consent from server to local (login hook).
   /// Server is SoT; local is mirror.
   /// Sprint 4: Call on app start after auth.

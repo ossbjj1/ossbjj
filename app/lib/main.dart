@@ -47,7 +47,8 @@ void main() async {
       await consentService.syncAnalyticsFromServer();
     } catch (e, stackTrace) {
       // Log but continue; local value is fallback
-      logger.e('Consent sync failed during startup', error: e, stackTrace: stackTrace);
+      logger.e('Consent sync failed during startup',
+          error: e, stackTrace: stackTrace);
     }
   }
 

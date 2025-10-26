@@ -88,9 +88,8 @@ class GatingService {
       final now = DateTime.now().toUtc().toIso8601String();
 
       // Insert/update progress (idempotent via PK upsert)
-      final response = await Supabase.instance.client
-          .from('user_step_progress')
-          .upsert({
+      final response =
+          await Supabase.instance.client.from('user_step_progress').upsert({
         'user_id': user.id,
         'technique_step_id': techniqueStepId,
         'done_at': now,
