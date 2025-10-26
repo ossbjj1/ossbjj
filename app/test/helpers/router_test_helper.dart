@@ -23,8 +23,7 @@ class RouterTestHelper {
         ),
         GoRoute(
           path: '/onboarding',
-          builder: (context, state) =>
-              const Scaffold(body: Text('Onboarding')),
+          builder: (context, state) => const Scaffold(body: Text('Onboarding')),
         ),
         GoRoute(
           path: '/step/:id',

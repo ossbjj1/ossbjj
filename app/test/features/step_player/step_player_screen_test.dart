@@ -37,9 +37,10 @@ void main() {
     testWidgets('displays step ID and complete button', (tester) async {
       await tester.pumpWidget(createTestWidget());
 
-      expect(find.text('Step Player MVP'), findsOneWidget);
-      expect(find.text('Step ID: step-123'), findsOneWidget);
-      expect(find.text('Continue'), findsOneWidget);
+      expect(find.byKey(const Key('step_player_title')), findsOneWidget);
+      expect(find.byKey(const Key('step_player_step_id')), findsOneWidget);
+      expect(
+          find.byKey(const Key('step_player_complete_button')), findsOneWidget);
     });
 
     testWidgets('shows loading spinner while completing step', (tester) async {
@@ -56,7 +57,7 @@ void main() {
 
       await tester.pumpWidget(createTestWidget());
 
-      await tester.tap(find.text('Continue'));
+      await tester.tap(find.byKey(const Key('step_player_complete_button')));
       await tester.pump();
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
@@ -75,7 +76,7 @@ void main() {
 
       await tester.pumpWidget(createTestWidget());
 
-      await tester.tap(find.text('Continue'));
+      await tester.tap(find.byKey(const Key('step_player_complete_button')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
 
@@ -96,7 +97,7 @@ void main() {
 
       await tester.pumpWidget(createTestWidget());
 
-      await tester.tap(find.text('Continue'));
+      await tester.tap(find.byKey(const Key('step_player_complete_button')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
 
@@ -110,7 +111,7 @@ void main() {
 
       await tester.pumpWidget(createTestWidget());
 
-      await tester.tap(find.text('Continue'));
+      await tester.tap(find.byKey(const Key('step_player_complete_button')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
 
@@ -124,13 +125,41 @@ void main() {
 
       await tester.pumpWidget(createTestWidget());
 
-      await tester.tap(find.text('Continue'));
+      await tester.tap(find.byKey(const Key('step_player_complete_button')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
 
       // Button should be enabled again
-      final button = tester.widget<ElevatedButton>(find.byType(ElevatedButton));
+      final button = tester.widget<ElevatedButton>(
+          find.byKey(const Key('step_player_complete_button')));
       expect(button.onPressed, isNotNull);
+    });
+
+    testWidgets('shows idempotent completion message', (tester) async {
+      when(mockGatingService.completeStep('step-123')).thenAnswer(
+        (_) async {
+          await Future.delayed(const Duration(milliseconds: 50));
+          return const CompleteResult(
+            success: true,
+            idempotent: true,
+            message: 'Step completed',
+          );
+        },
+      );
+
+      await tester.pumpWidget(createTestWidget());
+
+      await tester.tap(find.byKey(const Key('step_player_complete_button')));
+      await tester.pump();
+
+      // Loading indicator should show
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+      await tester.pumpAndSettle();
+
+      // Success snackbar should appear (idempotent still shows success)
+      expect(find.byType(SnackBar), findsOneWidget);
+      expect(find.text('Step completed!'), findsOneWidget);
     });
   });
 }

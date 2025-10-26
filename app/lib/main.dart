@@ -16,18 +16,18 @@ import 'core/l10n/strings.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize logger for startup errors
+  // Initialize shared logger for all services
   final logger = Logger();
 
-  // Initialize services (Sprint 3 + Sprint 4)
-  final consentService = ConsentService();
+  // Initialize services (Sprint 3 + Sprint 4) with shared logger
+  final consentService = ConsentService(logger: logger);
   final analyticsService = AnalyticsService();
   final authService = AuthService();
   final profileService = ProfileService();
   final localeService = LocaleService();
   final audioService = AudioService();
   final progressService = ProgressService();
-  final gatingService = GatingService();
+  final gatingService = GatingService(logger: logger);
 
   // Load local consent state (Sprint 2)
   await consentService.load();
@@ -52,8 +52,12 @@ void main() async {
     }
   }
 
-  // Reload consent state after sync
-  final consentStateFinal = await consentService.load();
+  // Use in-memory consent state after sync (avoid extra disk read)
+  final consentStateFinal = ConsentState(
+    analytics: consentService.analytics,
+    media: consentService.media,
+    shown: consentService.shown,
+  );
 
   // Check if onboarding needed
   bool forceOnboarding = false;

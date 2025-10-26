@@ -8,7 +8,7 @@ CREATE OR REPLACE FUNCTION public.ensure_user_profile()
 RETURNS boolean
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public, pg_catalog
+SET search_path = pg_catalog, public
 AS $$
 BEGIN
   INSERT INTO public.user_profile (user_id)

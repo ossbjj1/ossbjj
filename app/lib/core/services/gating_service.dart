@@ -11,6 +11,13 @@ class GatingService {
 
   /// Check if user can access step.
   /// MVP: Steps 1-2 free; step 3+ requires premium.
+  ///
+  /// ⚠️ SECURITY TODO (Sprint 4.1): This method performs client-side entitlement
+  /// checks which can be bypassed. Must be refactored to call server-side
+  /// Edge Function POST /gating/check-step-access for authoritative validation.
+  /// See ADR-002 and WARP.md security guidelines.
+  @Deprecated(
+      'Client-side gating is insecure. Migrate to Edge Function in Sprint 4.1')
   Future<GatingAccess> checkStepAccess(String techniqueStepId) async {
     final user = Supabase.instance.client.auth.currentUser;
     if (user == null) {
@@ -28,7 +35,7 @@ class GatingService {
           .eq('id', techniqueStepId)
           .single();
 
-      final idx = stepResponse['idx'] as int;
+      final idx = (stepResponse['idx'] as num).toInt();
 
       // Free: idx 0-1 (steps 1-2)
       if (idx <= 1) {

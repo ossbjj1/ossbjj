@@ -154,7 +154,7 @@ class _ContinueCardState extends State<ContinueCard> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(t.unableToLoadContinueHint),
+          content: Text(t.errorGeneric), // Gating access check failed
           backgroundColor: DsColors.stateError,
         ),
       );

@@ -70,8 +70,8 @@ void main() {
       await tester.pumpWidget(createTestWidget(hint: null));
       await tester.pumpAndSettle();
 
-      expect(
-          find.byKey(const Key('continue_card_onboarding_button')), findsOneWidget);
+      expect(find.byKey(const Key('continue_card_onboarding_button')),
+          findsOneWidget);
       expect(find.text('Start Onboarding'), findsOneWidget);
       expect(find.text('Save Profile'), findsOneWidget);
     });
@@ -82,8 +82,8 @@ void main() {
       await tester.pumpWidget(createTestWidget(hint: hint));
       await tester.pumpAndSettle();
 
-      expect(
-          find.byKey(const Key('continue_card_continue_button')), findsOneWidget);
+      expect(find.byKey(const Key('continue_card_continue_button')),
+          findsOneWidget);
       expect(find.text('Armbar Basics'), findsOneWidget);
       expect(find.text('Continue'), findsNWidgets(2)); // title + button
     });
@@ -104,7 +104,7 @@ void main() {
       await tester.pumpAndSettle();
 
       verify(mockGatingService.checkStepAccess('step-123')).called(1);
-      // Note: Navigation verified by no error + Placeholder rendered
+      // Navigation verified: no exception thrown (mock router handles route)
     });
 
     testWidgets('calls gating service and navigates to paywall when locked',
@@ -123,6 +123,7 @@ void main() {
       await tester.pumpAndSettle();
 
       verify(mockGatingService.checkStepAccess('step-123')).called(1);
+      // Navigation verified: no exception thrown (mock router handles route)
     });
 
     testWidgets('shows error snackbar on gating failure', (tester) async {
@@ -139,7 +140,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
 
       expect(find.byType(SnackBar), findsOneWidget);
-      expect(find.text('Unable to load continue hint'), findsOneWidget);
+      expect(find.text('An error occurred'), findsOneWidget); // errorGeneric
     });
   });
 }

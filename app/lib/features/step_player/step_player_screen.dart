@@ -45,15 +45,18 @@ class _StepPlayerScreenState extends State<StepPlayerScreen> {
           children: [
             Text(
               'Step Player MVP',
+              key: const Key('step_player_title'),
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: DsSpacing.md),
             Text(
               'Step ID: ${widget.stepId}',
+              key: const Key('step_player_step_id'),
               style: Theme.of(context).textTheme.bodyLarge,
             ),
             const SizedBox(height: DsSpacing.xxl),
             ElevatedButton(
+              key: const Key('step_player_complete_button'),
               onPressed: _isCompleting ? null : _handleComplete,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.primary,

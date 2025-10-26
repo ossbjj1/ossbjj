@@ -76,10 +76,12 @@ class ConsentService {
 
   /// Fetch analytics consent from server (user_profile.consent_analytics).
   /// Sprint 4: Server as SoT.
+  /// Returns false on error (non-throwing for graceful degradation).
   Future<bool> fetchServerAnalytics() async {
     final user = Supabase.instance.client.auth.currentUser;
     if (user == null) {
-      throw Exception('Cannot fetch server consent: user not logged in');
+      _logger.w('Cannot fetch server consent: user not logged in');
+      return false;
     }
 
     try {
@@ -97,7 +99,7 @@ class ConsentService {
     } catch (e, stackTrace) {
       _logger.e('Fetch server consent failed',
           error: e, stackTrace: stackTrace);
-      rethrow;
+      return false; // Graceful degradation
     }
   }
 
