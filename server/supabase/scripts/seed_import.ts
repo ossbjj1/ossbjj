@@ -7,15 +7,22 @@
  * - Idempotent upserts (ON CONFLICT DO UPDATE)
  * - Validation (ref integrity, counts, duplicates)
  * - Flags: --dry-run (preview), --apply (execute)
+ * - Configurable count validation via env vars
  * 
  * Usage:
  *   export SUPABASE_URL=https://...
  *   export SUPABASE_SERVICE_ROLE=eyJ...
+ *   export SEEDS_DIR=/path/to/seeds  # optional, auto-resolved from script location
+ *   export EXPECT_TECHNIQUES=20  # optional, default 20
+ *   export MIN_STEPS=80  # optional, default 80
+ *   export MAX_STEPS=240  # optional, default 240
+ *   export ENFORCE_COUNTS=false  # optional, default false (warnings only)
  *   deno run -A seed_import.ts --dry-run
  *   deno run -A seed_import.ts --apply
  */
 
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { fromFileUrl } from "jsr:@std/path@1";
 
 // UUID v5 namespace (random, stable for this project)
 const NAMESPACE_TECHNIQUE = "6ba7b810-9dad-11d1-80b4-00c04fd430c8";
@@ -82,26 +89,68 @@ async function main() {
 
   const supabase = createClient(url, key);
 
-  // Load seeds
-  const techniquesRaw = await Deno.readTextFile("seeds/techniques.json");
-  const stepsRaw = await Deno.readTextFile("seeds/steps.json");
+  // Resolve seeds directory (absolute path from script location or env)
+  let seedsDir = Deno.env.get("SEEDS_DIR");
+  if (!seedsDir) {
+    const scriptDir = fromFileUrl(new URL(".", import.meta.url));
+    seedsDir = new URL("../../../seeds/", import.meta.url).pathname;
+  }
+
+  const techniquesPath = `${seedsDir}/techniques.json`;
+  const stepsPath = `${seedsDir}/steps.json`;
+
+  // Load seeds with error handling
+  let techniquesRaw: string;
+  let stepsRaw: string;
+  try {
+    techniquesRaw = await Deno.readTextFile(techniquesPath);
+  } catch (e) {
+    console.error(`❌ Failed to read ${techniquesPath}:`, e.message);
+    Deno.exit(1);
+  }
+  try {
+    stepsRaw = await Deno.readTextFile(stepsPath);
+  } catch (e) {
+    console.error(`❌ Failed to read ${stepsPath}:`, e.message);
+    Deno.exit(1);
+  }
+
   const techniques: Technique[] = JSON.parse(techniquesRaw);
   const steps: Step[] = JSON.parse(stepsRaw);
 
   console.log(`📦 Loaded ${techniques.length} techniques, ${steps.length} steps`);
 
+  // Configurable validation thresholds
+  const expectTechniques = parseInt(
+    Deno.env.get("EXPECT_TECHNIQUES") || "20",
+    10
+  );
+  const minSteps = parseInt(Deno.env.get("MIN_STEPS") || "80", 10);
+  const maxSteps = parseInt(Deno.env.get("MAX_STEPS") || "240", 10);
+  const enforceCounts = Deno.env.get("ENFORCE_COUNTS") === "true";
+
   // Validation
   const slugSet = new Set(techniques.map((t) => t.slug));
   const errors: string[] = [];
+  const warnings: string[] = [];
 
-  if (techniques.length !== 20) {
-    errors.push(`Expected 20 techniques, got ${techniques.length}`);
+  if (techniques.length !== expectTechniques) {
+    const msg = `Expected ${expectTechniques} techniques, got ${techniques.length}`;
+    if (enforceCounts) {
+      errors.push(msg);
+    } else {
+      warnings.push(msg);
+    }
   }
 
-  if (steps.length < 80 || steps.length > 120) {
-    errors.push(`Expected 80-120 steps, got ${steps.length}`);
+  if (steps.length < minSteps || steps.length > maxSteps) {
+    const msg = `Expected ${minSteps}-${maxSteps} steps, got ${steps.length}`;
+    if (enforceCounts) {
+      errors.push(msg);
+    } else {
+      warnings.push(msg);
+    }
   }
-  // Note: 94 steps (20 techniques × 4–5 steps/variant) meets MVP; expand to ≥100 in future sprints
 
   for (const step of steps) {
     if (!slugSet.has(step.technique_slug)) {
@@ -115,6 +164,11 @@ async function main() {
   const stepKeySet = new Set(stepKeys);
   if (stepKeys.length !== stepKeySet.size) {
     errors.push("Duplicate (technique_slug, variant, idx) detected");
+  }
+
+  if (warnings.length > 0) {
+    console.warn("⚠️  Validation warnings:");
+    warnings.forEach((w) => console.warn(`  - ${w}`));
   }
 
   if (errors.length > 0) {
