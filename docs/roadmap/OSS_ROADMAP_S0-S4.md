@@ -66,7 +66,7 @@
 **Status:** ✅ Done (PR #7, Issue #8)
 - Onboarding Screen mit Belt/Exp/Goal/Type + Validierung + Upsert
 - Settings: Live-i18n (DE/EN), Audio‑Feedback, Privacy/Legal/Logout
-- Home ContinueCard mit Hint oder Onboarding‑CTA
+- Home ContinueCard mit Hint oder Onboarding-CTA
 - Router Redirects (Consent → Onboarding)
 - DB: user_profile + RLS + Constraints
 - i18n: Runtime Strings mit Safe Accessors
