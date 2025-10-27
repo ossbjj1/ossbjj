@@ -28,10 +28,24 @@ BEGIN
     RETURN;
   END IF;
 
+  -- Validate step exists to avoid FK errors and improve UX
+  IF NOT EXISTS (
+    SELECT 1 FROM public.technique_step ts WHERE ts.id = p_technique_step_id
+  ) THEN
+    RETURN QUERY SELECT false, false, 'invalid_step'::text;
+    RETURN;
+  END IF;
+
   -- Idempotent insert: ON CONFLICT DO NOTHING
-  INSERT INTO public.user_step_progress (user_id, technique_step_id, completed_at)
-  VALUES (v_user_id, p_technique_step_id, now())
-  ON CONFLICT (user_id, technique_step_id) DO NOTHING;
+  BEGIN
+    INSERT INTO public.user_step_progress (user_id, technique_step_id, completed_at)
+    VALUES (v_user_id, p_technique_step_id, now())
+    ON CONFLICT (user_id, technique_step_id) DO NOTHING;
+  EXCEPTION
+    WHEN foreign_key_violation THEN
+      RETURN QUERY SELECT false, false, 'invalid_step'::text;
+      RETURN;
+  END;
 
   -- Check if row was inserted (1) or already existed (0)
   GET DIAGNOSTICS v_inserted = ROW_COUNT;
