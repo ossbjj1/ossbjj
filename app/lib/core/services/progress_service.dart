@@ -47,7 +47,7 @@ class ProgressService {
   }
 
   /// Get next incomplete step for user (Sprint 4 variant-aware).
-  /// 
+  ///
   /// Logic:
   /// 1. Determine variant (preferredVariant or last completion, fallback 'gi')
   /// 2. Fetch first incomplete step for that variant via RPC
@@ -60,7 +60,8 @@ class ProgressService {
 
     try {
       // Determine variant
-      String variant = preferredVariant ?? await _getLastVariant(user.id) ?? 'gi';
+      String variant =
+          preferredVariant ?? await _getLastVariant(user.id) ?? 'gi';
 
       // Fetch first incomplete step (RPC with variant filter)
       final response = await _supabase.rpc('get_next_step', params: {

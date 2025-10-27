@@ -30,10 +30,12 @@ void main() {
       // If nextStepFuture is provided (for loading tests), use it directly
       // Otherwise mock with immediate result
       if (nextStepFuture != null) {
-        when(mockProgressService.getNextStep(preferredVariant: anyNamed('preferredVariant')))
+        when(mockProgressService.getNextStep(
+                preferredVariant: anyNamed('preferredVariant')))
             .thenAnswer((_) => nextStepFuture);
       } else {
-        when(mockProgressService.getNextStep(preferredVariant: anyNamed('preferredVariant')))
+        when(mockProgressService.getNextStep(
+                preferredVariant: anyNamed('preferredVariant')))
             .thenAnswer((_) async => nextStep);
       }
 
@@ -58,7 +60,8 @@ void main() {
         (tester) async {
       final completer = Completer<NextStepResult?>();
 
-      await tester.pumpWidget(createTestWidget(nextStepFuture: completer.future));
+      await tester
+          .pumpWidget(createTestWidget(nextStepFuture: completer.future));
       await tester.pump(); // Start the future but don't complete it
 
       expect(find.byKey(const Key('continue_card_loading')), findsOneWidget);
@@ -116,7 +119,8 @@ void main() {
       verifyNever(mockGatingService.checkStepAccess(any));
     });
 
-    testWidgets('calls gating service and navigates to paywall when idx >= 3 and locked',
+    testWidgets(
+        'calls gating service and navigates to paywall when idx >= 3 and locked',
         (tester) async {
       const nextStep = NextStepResult(
         stepId: 'step-premium',

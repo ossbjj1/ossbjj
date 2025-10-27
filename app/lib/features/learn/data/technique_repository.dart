@@ -2,7 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../data/models.dart';
 
 /// Technique repository (Sprint 4 MVP).
-/// 
+///
 /// Direct Supabase queries. RLS enforces access control.
 class TechniqueRepository {
   TechniqueRepository(this._supabase);

@@ -5,7 +5,8 @@ import '../../core/design_tokens/spacing.dart';
 import '../../core/design_tokens/typography.dart';
 import '../../core/l10n/strings.dart';
 import '../../core/navigation/routes.dart';
-import '../../core/services/progress_service.dart' show ProgressService, NextStepResult;
+import '../../core/services/progress_service.dart'
+    show ProgressService, NextStepResult;
 import '../../core/services/gating_service.dart';
 
 /// Continue card for Home screen (Sprint 3 MVP + Sprint 4).
@@ -140,7 +141,8 @@ class _ContinueCardState extends State<ContinueCard> {
     try {
       // Gating: Steps 1-2 free, idx>=3 requires premium
       if (nextStep.idx >= 3) {
-        final access = await widget.gatingService.checkStepAccess(nextStep.stepId);
+        final access =
+            await widget.gatingService.checkStepAccess(nextStep.stepId);
 
         if (!mounted) return;
 
