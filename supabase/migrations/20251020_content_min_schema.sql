@@ -24,7 +24,7 @@ create table if not exists public.technique_step (
 -- user_step_progress (minimal)
 create table if not exists public.user_step_progress (
   user_id uuid not null,
-  technique_step_id uuid not null,
+  technique_step_id uuid not null references public.technique_step(id) on delete cascade,
   completed_at timestamptz default now(),
   primary key (user_id, technique_step_id)
 );
