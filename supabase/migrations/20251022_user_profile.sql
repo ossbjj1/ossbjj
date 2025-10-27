@@ -15,7 +15,6 @@ create table if not exists public.user_profile(
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
-
 -- Domain constraints (enforce valid values server-side)
 do $$
 begin
@@ -28,7 +27,6 @@ begin
         check (weekly_goal is null or (weekly_goal >= 1 and weekly_goal <= 7));
   end if;
 end$$;
-
 do $$
 begin
   if not exists (
@@ -40,7 +38,6 @@ begin
         check (belt is null or belt in ('white','blue','purple','brown','black'));
   end if;
 end$$;
-
 do $$
 begin
   if not exists (
@@ -52,7 +49,6 @@ begin
         check (exp_range is null or exp_range in ('beginner','intermediate','advanced'));
   end if;
 end$$;
-
 do $$
 begin
   if not exists (
@@ -64,7 +60,6 @@ begin
         check (goal_type is null or goal_type in ('fundamentals','technique','strength','flexibility'));
   end if;
 end$$;
-
 do $$
 begin
   if not exists (
@@ -76,7 +71,6 @@ begin
         check (age_group is null or age_group in ('u18','18-30','30-40','40+'));
   end if;
 end$$;
-
 do $$
 begin
   if not exists (
@@ -88,10 +82,8 @@ begin
         check (entitlement in ('free','trial','pro'));
   end if;
 end$$;
-
 -- 2) Enable RLS
 alter table public.user_profile enable row level security;
-
 -- 3) RLS Policies (idempotent)
 do $$
 begin
@@ -121,7 +113,6 @@ begin
         with check (auth.uid() = user_id);
   end if;
 end$$;
-
 -- 4) Trigger for updated_at
 create or replace function public.touch_user_profile_updated_at()
 returns trigger language plpgsql as $$
@@ -129,10 +120,8 @@ begin
   new.updated_at = now();
   return new;
 end$$;
-
 drop trigger if exists trg_up_updated_at on public.user_profile;
 create trigger trg_up_updated_at
   before update on public.user_profile
   for each row execute function public.touch_user_profile_updated_at();
-
--- 5) Performance index (user_id is primary key, already indexed by default in PostgreSQL)
+-- 5) Performance index (user_id is primary key, already indexed by default in PostgreSQL);

@@ -15,11 +15,9 @@ BEGIN
       ADD COLUMN display_order SMALLINT NOT NULL DEFAULT 999;
   END IF;
 END$$;
-
 -- Create index for fast sorting (idempotent)
 CREATE INDEX IF NOT EXISTS idx_technique_display_order
   ON public.technique(display_order);
-
 -- Document the column
 COMMENT ON COLUMN public.technique.display_order IS
   'Sort order for Learn catalog (1..N); lower values appear first.';

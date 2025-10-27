@@ -10,7 +10,6 @@ create table if not exists public.technique (
   title_de text,
   created_at timestamptz default now()
 );
-
 -- technique_step (minimal)
 create table if not exists public.technique_step (
   id uuid primary key,
@@ -22,7 +21,6 @@ create table if not exists public.technique_step (
   duration_s int default 10,
   unique(technique_id, variant, idx)
 );
-
 -- user_step_progress (minimal)
 create table if not exists public.user_step_progress (
   user_id uuid not null,
@@ -30,10 +28,8 @@ create table if not exists public.user_step_progress (
   completed_at timestamptz default now(),
   primary key (user_id, technique_step_id)
 );
-
 -- RLS for user_step_progress (idempotent)
 alter table public.user_step_progress enable row level security;
-
 do $$
 begin
   if not exists (
@@ -50,7 +46,6 @@ begin
       for insert with check (auth.uid() = user_id);
   end if;
 end$$;
-
 -- Optional: add FK to user_profile if exists
 do $$
 begin

@@ -29,8 +29,8 @@ Die Roadmap ist in 2 Phasen aufgeteilt:
 
 ## 🎯 Aktueller Status
 
-**Sprint:** ✅ S3 Complete (Consent, DSGVO, Legal, Auth)
-**Nächster Schritt:** Sprint 4 starten (
+**Sprint:** ✅ S4 Complete (DB, Seeds, Learn-Katalog)
+**Nächster Schritt:** Sprint 5 starten
 **PR:** https://github.com/ossbjj1/ossbjj/pull/5
 
 ---

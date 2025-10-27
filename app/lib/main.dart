@@ -28,7 +28,6 @@ void main() async {
   final profileService = ProfileService();
   final localeService = LocaleService();
   final audioService = AudioService();
-  final progressService = ProgressService(Supabase.instance.client);
   final gatingService = GatingService(logger: logger);
 
   // Load local consent state (Sprint 2)
@@ -40,8 +39,11 @@ void main() async {
   // Load audio preference
   await audioService.load();
 
-  // Init Auth (Supabase)
+  // Init Auth (Supabase) BEFORE using Supabase.instance anywhere
   await authService.init();
+
+  // Now it's safe to create services depending on Supabase.instance
+  final progressService = ProgressService(Supabase.instance.client);
 
   // Sprint 4: Sync consent from server (if logged in)
   if (authService.currentUser != null) {

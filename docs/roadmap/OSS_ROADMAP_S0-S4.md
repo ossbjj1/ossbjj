@@ -92,13 +92,13 @@
 
 **Tasks:**
 1. Supabase Migrations: `user_profile`, `technique`, `technique_step`, `user_step_progress` — ✅ Done
-2. `seeds/techniques.json` (20 Techniken) + `seeds/steps.json` (100 Steps) – DE/EN Titel
-3. Learn-Screen (`/learn`): Kategorien-Grid → Technikliste je Kategorie
-4. Home-"Weiter machen": Client-Heuristik (erster nicht erledigter Step)
+2. `seeds/techniques.json` (20 Techniken) + `seeds/steps.json` (120 Steps) – DE/EN Titel — ✅ Done
+3. Learn-Screen (`/learn`): Kategorien-Grid → Technikliste je Kategorie — ✅ Done
+4. Home-"Weiter machen": Client-Heuristik (erster nicht erledigter Step) — ✅ Done
 
 **DoD (aktueller Status):**
-- Kategorien und Techniklisten laden schnell — ⏳ Open (Seeds/Screen fehlen)
-- "Weiter machen" zeigt plausiblen nächsten Step — ⏳ Open (Heuristik fehlt)
+- Kategorien und Techniklisten laden schnell — ✅ Done
+- "Weiter machen" zeigt plausiblen nächsten Step — ✅ Done
 
 **Carryover / TODO:**
-- Seeds Step-Count Angleichen: aktuell 94 Steps; DoD fordert 100–120. Option A) +6–26 Steps ergänzen (gi/nogi duplizieren falls sinnvoll). Option B) DoD/Docs auf 80–120 anpassen (Validator bereits 80–120). Owner: Content/DB. Sprint: 4→5.
+- —

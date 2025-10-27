@@ -13,7 +13,6 @@ create table if not exists public.content_roadmap (
   status text default 'planned' check (status in ('planned','released','archived')),
   created_at timestamptz default now()
 );
-
 -- 2) ACHIEVEMENTS (definition)
 create table if not exists public.achievement (
   id serial primary key,
@@ -26,7 +25,6 @@ create table if not exists public.achievement (
   unlock_condition jsonb not null,
   created_at timestamptz default now()
 );
-
 -- 3) USER-ACHIEVEMENTS (grants)
 create table if not exists public.user_achievement (
   user_id uuid references public.user_profile(user_id) on delete cascade,
@@ -34,10 +32,8 @@ create table if not exists public.user_achievement (
   unlocked_at timestamptz default now(),
   primary key (user_id, achievement_id)
 );
-
 -- 4) RLS for user_achievement
 alter table public.user_achievement enable row level security;
-
 do $$
 begin
   if not exists (
@@ -54,7 +50,6 @@ begin
       for insert with check (auth.uid() = user_id);
   end if;
 end$$;
-
 -- 5) Helper: calc_streak_days (counts consecutive days with ≥1 completed step)
 create or replace function public.calc_streak_days(p_user_id uuid)
 returns int language plpgsql stable as $$
@@ -76,7 +71,6 @@ begin
   end loop;
   return streak;
 end$$;
-
 -- 6) Helper: count_completed_techniques (techniques with all steps done per variant)
 create or replace function public.count_completed_techniques(p_user_id uuid)
 returns int language sql stable as $$
@@ -92,7 +86,6 @@ with per_tech as (
 )
 select count(*)::int from per_tech where completed_steps = total_steps;
 $$;
-
 -- 7) Performance indexes
 create index if not exists idx_ua_user on public.user_achievement(user_id);
 create index if not exists idx_cr_status_date on public.content_roadmap(status, release_date);

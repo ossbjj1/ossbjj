@@ -45,7 +45,6 @@ BEGIN
   END IF;
 END;
 $$;
-
 -- Restrict EXECUTE to authenticated users only
 REVOKE EXECUTE ON FUNCTION public.mark_step_complete(uuid) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.mark_step_complete(uuid) TO authenticated;
