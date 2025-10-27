@@ -32,10 +32,8 @@ class TechniqueRepository {
         .eq('category', category)
         .order('display_order', ascending: true);
 
-    final rows = response as List<dynamic>;
-    return rows
-        .map((row) => TechniqueDto.fromJson(row as Map<String, dynamic>))
-        .toList();
+    final rows = (response as List).cast<Map<String, dynamic>>();
+    return rows.map(TechniqueDto.fromJson).toList();
   }
 
   /// Fetch steps for a technique (ordered by idx).
