@@ -5,7 +5,7 @@ import '../../core/design_tokens/spacing.dart';
 import '../../core/design_tokens/typography.dart';
 import '../../core/l10n/strings.dart';
 import '../../core/navigation/routes.dart';
-import '../../core/services/progress_service.dart';
+import '../../core/services/progress_service.dart' show ProgressService, NextStepResult;
 import '../../core/services/gating_service.dart';
 
 /// Continue card for Home screen (Sprint 3 MVP + Sprint 4).
@@ -24,21 +24,21 @@ class ContinueCard extends StatefulWidget {
 }
 
 class _ContinueCardState extends State<ContinueCard> {
-  late Future<ContinueHint?> _lastHintFuture;
+  late Future<NextStepResult?> _nextStepFuture;
 
   @override
   void initState() {
     super.initState();
     // Cache the future once to avoid recreating on every rebuild
-    _lastHintFuture = widget.progressService.loadLast();
+    _nextStepFuture = widget.progressService.getNextStep();
   }
 
   @override
   Widget build(BuildContext context) {
     final t = StringsScope.of(context);
 
-    return FutureBuilder<ContinueHint?>(
-      future: _lastHintFuture,
+    return FutureBuilder<NextStepResult?>(
+      future: _nextStepFuture,
       builder: (context, snapshot) {
         // Handle error state
         if (snapshot.hasError) {
@@ -78,7 +78,8 @@ class _ContinueCardState extends State<ContinueCard> {
           );
         }
 
-        final hint = snapshot.data;
+        final nextStep = snapshot.data;
+        final locale = Localizations.localeOf(context).languageCode;
 
         return Card(
           color: DsColors.bgSurface,
@@ -95,9 +96,9 @@ class _ContinueCardState extends State<ContinueCard> {
                   ),
                 ),
                 const SizedBox(height: DsSpacing.md),
-                if (hint != null)
+                if (nextStep != null)
                   Text(
-                    hint.title,
+                    locale == 'de' ? nextStep.titleDe : nextStep.titleEn,
                     style: DsTypography.bodyMedium.copyWith(
                       color: DsColors.textSecondary,
                     ),
@@ -111,18 +112,18 @@ class _ContinueCardState extends State<ContinueCard> {
                   ),
                 const SizedBox(height: DsSpacing.lg),
                 ElevatedButton(
-                  key: hint != null
+                  key: nextStep != null
                       ? const Key('continue_card_continue_button')
                       : const Key('continue_card_onboarding_button'),
-                  onPressed: hint != null
-                      ? () => _handleContinue(hint)
+                  onPressed: nextStep != null
+                      ? () => _handleContinue(nextStep)
                       : () => context.go(AppRoutes.onboardingPath),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Theme.of(context).colorScheme.onPrimary,
                   ),
                   child: Text(
-                    hint != null ? t.ctaContinue : t.onboardingSave,
+                    nextStep != null ? t.ctaContinue : t.onboardingSave,
                   ),
                 ),
               ],
@@ -133,21 +134,27 @@ class _ContinueCardState extends State<ContinueCard> {
     );
   }
 
-  /// Handle continue button press (Sprint 4: gating + navigation).
+  /// Handle continue button press (Sprint 4: gating idx>=3 + navigation).
   /// Uses State's context property to avoid use_build_context_synchronously warnings.
-  Future<void> _handleContinue(ContinueHint hint) async {
+  Future<void> _handleContinue(NextStepResult nextStep) async {
     try {
-      final access = await widget.gatingService.checkStepAccess(hint.stepId);
+      // Gating: Steps 1-2 free, idx>=3 requires premium
+      if (nextStep.idx >= 3) {
+        final access = await widget.gatingService.checkStepAccess(nextStep.stepId);
+
+        if (!mounted) return;
+
+        if (!access.allowed) {
+          // Navigate to paywall
+          context.go(AppRoutes.paywallPath);
+          return;
+        }
+      }
 
       if (!mounted) return;
 
-      if (access.allowed) {
-        // Navigate to step player
-        context.go('${AppRoutes.stepPath}/${hint.stepId}');
-      } else {
-        // Navigate to paywall
-        context.go(AppRoutes.paywallPath);
-      }
+      // Navigate to step player
+      context.go('/step/${nextStep.stepId}');
     } catch (e) {
       if (!mounted) return;
       final t = StringsScope.of(context);

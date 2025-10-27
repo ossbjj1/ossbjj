@@ -24,15 +24,17 @@ void main() {
     });
 
     Widget createTestWidget({
-      ContinueHint? hint,
-      Future<ContinueHint?>? hintFuture,
+      NextStepResult? nextStep,
+      Future<NextStepResult?>? nextStepFuture,
     }) {
-      // If hintFuture is provided (for loading tests), use it directly
+      // If nextStepFuture is provided (for loading tests), use it directly
       // Otherwise mock with immediate result
-      if (hintFuture != null) {
-        when(mockProgressService.loadLast()).thenAnswer((_) => hintFuture);
+      if (nextStepFuture != null) {
+        when(mockProgressService.getNextStep(preferredVariant: anyNamed('preferredVariant')))
+            .thenAnswer((_) => nextStepFuture);
       } else {
-        when(mockProgressService.loadLast()).thenAnswer((_) async => hint);
+        when(mockProgressService.getNextStep(preferredVariant: anyNamed('preferredVariant')))
+            .thenAnswer((_) async => nextStep);
       }
 
       final router = RouterTestHelper.createMockRouter(
@@ -52,11 +54,11 @@ void main() {
       );
     }
 
-    testWidgets('shows loading placeholder while fetching hint',
+    testWidgets('shows loading placeholder while fetching next step',
         (tester) async {
-      final completer = Completer<ContinueHint?>();
+      final completer = Completer<NextStepResult?>();
 
-      await tester.pumpWidget(createTestWidget(hintFuture: completer.future));
+      await tester.pumpWidget(createTestWidget(nextStepFuture: completer.future));
       await tester.pump(); // Start the future but don't complete it
 
       expect(find.byKey(const Key('continue_card_loading')), findsOneWidget);
@@ -66,8 +68,8 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('shows onboarding CTA when hint is null', (tester) async {
-      await tester.pumpWidget(createTestWidget(hint: null));
+    testWidgets('shows onboarding CTA when nextStep is null', (tester) async {
+      await tester.pumpWidget(createTestWidget(nextStep: null));
       await tester.pumpAndSettle();
 
       expect(find.byKey(const Key('continue_card_onboarding_button')),
@@ -76,10 +78,16 @@ void main() {
       expect(find.text('Save Profile'), findsOneWidget);
     });
 
-    testWidgets('shows continue button when hint exists', (tester) async {
-      const hint = ContinueHint(stepId: 'step-123', title: 'Armbar Basics');
+    testWidgets('shows continue button when nextStep exists', (tester) async {
+      const nextStep = NextStepResult(
+        stepId: 'step-123',
+        titleEn: 'Armbar Basics',
+        titleDe: 'Armhebel Basics',
+        idx: 1,
+        variant: 'gi',
+      );
 
-      await tester.pumpWidget(createTestWidget(hint: hint));
+      await tester.pumpWidget(createTestWidget(nextStep: nextStep));
       await tester.pumpAndSettle();
 
       expect(find.byKey(const Key('continue_card_continue_button')),
@@ -88,51 +96,64 @@ void main() {
       expect(find.text('Continue'), findsNWidgets(2)); // title + button
     });
 
-    testWidgets('calls gating service and navigates to step when allowed',
+    testWidgets('navigates directly to step when idx < 3 (free)',
         (tester) async {
-      const hint = ContinueHint(stepId: 'step-123', title: 'Armbar');
-
-      when(mockGatingService.checkStepAccess('step-123')).thenAnswer(
-        (_) async =>
-            const GatingAccess(allowed: true, reason: GatingReason.free),
+      const nextStep = NextStepResult(
+        stepId: 'step-123',
+        titleEn: 'Armbar',
+        titleDe: 'Armhebel',
+        idx: 1,
+        variant: 'gi',
       );
 
-      await tester.pumpWidget(createTestWidget(hint: hint));
+      await tester.pumpWidget(createTestWidget(nextStep: nextStep));
       await tester.pumpAndSettle();
 
       await tester.tap(find.byKey(const Key('continue_card_continue_button')));
       await tester.pumpAndSettle();
 
-      verify(mockGatingService.checkStepAccess('step-123')).called(1);
-      // Navigation verified: no exception thrown (mock router handles route)
+      // idx=1 -> no gating call, direct navigation
+      verifyNever(mockGatingService.checkStepAccess(any));
     });
 
-    testWidgets('calls gating service and navigates to paywall when locked',
+    testWidgets('calls gating service and navigates to paywall when idx >= 3 and locked',
         (tester) async {
-      const hint = ContinueHint(stepId: 'step-123', title: 'Armbar');
+      const nextStep = NextStepResult(
+        stepId: 'step-premium',
+        titleEn: 'Advanced Armbar',
+        titleDe: 'Fortgeschrittener Armhebel',
+        idx: 3,
+        variant: 'gi',
+      );
 
-      when(mockGatingService.checkStepAccess('step-123')).thenAnswer(
+      when(mockGatingService.checkStepAccess('step-premium')).thenAnswer(
         (_) async => const GatingAccess(
             allowed: false, reason: GatingReason.premiumRequired),
       );
 
-      await tester.pumpWidget(createTestWidget(hint: hint));
+      await tester.pumpWidget(createTestWidget(nextStep: nextStep));
       await tester.pumpAndSettle();
 
       await tester.tap(find.byKey(const Key('continue_card_continue_button')));
       await tester.pumpAndSettle();
 
-      verify(mockGatingService.checkStepAccess('step-123')).called(1);
+      verify(mockGatingService.checkStepAccess('step-premium')).called(1);
       // Navigation verified: no exception thrown (mock router handles route)
     });
 
     testWidgets('shows error snackbar on gating failure', (tester) async {
-      const hint = ContinueHint(stepId: 'step-123', title: 'Armbar');
+      const nextStep = NextStepResult(
+        stepId: 'step-gated',
+        titleEn: 'Gated Step',
+        titleDe: 'Gesperrter Schritt',
+        idx: 5,
+        variant: 'gi',
+      );
 
-      when(mockGatingService.checkStepAccess('step-123'))
+      when(mockGatingService.checkStepAccess('step-gated'))
           .thenThrow(Exception('Network error'));
 
-      await tester.pumpWidget(createTestWidget(hint: hint));
+      await tester.pumpWidget(createTestWidget(nextStep: nextStep));
       await tester.pumpAndSettle();
 
       await tester.tap(find.byKey(const Key('continue_card_continue_button')));

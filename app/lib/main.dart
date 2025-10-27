@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logger/logger.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'theme/app_theme.dart';
 import 'router.dart';
 import 'core/services/consent_service.dart';
@@ -26,7 +28,7 @@ void main() async {
   final profileService = ProfileService();
   final localeService = LocaleService();
   final audioService = AudioService();
-  final progressService = ProgressService();
+  final progressService = ProgressService(Supabase.instance.client);
   final gatingService = GatingService(logger: logger);
 
   // Load local consent state (Sprint 2)
@@ -86,9 +88,11 @@ void main() async {
     gatingService: gatingService,
   );
 
-  runApp(OssApp(
-    router: router,
-    localeService: localeService,
+  runApp(ProviderScope(
+    child: OssApp(
+      router: router,
+      localeService: localeService,
+    ),
   ));
 }
 

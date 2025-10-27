@@ -13,6 +13,7 @@ dependencies:
     sdk: flutter
 
   # State management (standardized on Riverpod)
+  flutter_riverpod: ^2.4.0
   riverpod: ^2.4.0
 
   # Navigation

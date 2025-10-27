@@ -26,7 +26,7 @@ Für MVP: Idempotent completion required; kein server-side rate-limit/audit nöt
 - Mapping auf `CompleteResult{success, idempotent, message}`
 
 **Migration**
-- `server/supabase/migrations/20251026_mark_step_complete_rpc.sql`
+- `supabase/migrations/20251026_mark_step_complete_rpc.sql`
 - Grant EXECUTE to authenticated only
 
 ## Consequences

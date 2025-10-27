@@ -99,3 +99,6 @@
 **DoD (aktueller Status):**
 - Kategorien und Techniklisten laden schnell — ⏳ Open (Seeds/Screen fehlen)
 - "Weiter machen" zeigt plausiblen nächsten Step — ⏳ Open (Heuristik fehlt)
+
+**Carryover / TODO:**
+- Seeds Step-Count Angleichen: aktuell 94 Steps; DoD fordert 100–120. Option A) +6–26 Steps ergänzen (gi/nogi duplizieren falls sinnvoll). Option B) DoD/Docs auf 80–120 anpassen (Validator bereits 80–120). Owner: Content/DB. Sprint: 4→5.

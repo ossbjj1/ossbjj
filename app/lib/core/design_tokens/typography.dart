@@ -54,6 +54,18 @@ class DsTypography {
     height: TypographyTokens.lineHeightNormal,
   );
 
+  static const headlineSmall = TextStyle(
+    fontSize: TypographyTokens.size20,
+    fontWeight: FontWeight.w600,
+    height: TypographyTokens.lineHeightNormal,
+  );
+
+  static const bodyLarge = TextStyle(
+    fontSize: TypographyTokens.size18,
+    fontWeight: FontWeight.normal,
+    height: TypographyTokens.lineHeightNormal,
+  );
+
   static const bodyMedium = TextStyle(
     fontSize: TypographyTokens.size16,
     fontWeight: FontWeight.normal,

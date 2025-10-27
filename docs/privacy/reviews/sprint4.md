@@ -16,8 +16,17 @@ Scope: Supabase migrations (content baseline + RPC) and server functions that to
 - DB: RPC `public.mark_step_complete(p_technique_step_id uuid)` (migration `20251026_mark_step_complete_rpc.sql`)
   - SECURITY DEFINER; uses `auth.uid()`; `INSERT ... ON CONFLICT DO NOTHING` → idempotent writes
   - Returns `{success:boolean, idempotent:boolean, message:text}`
+- DB: RPC `public.get_next_step(p_user_id uuid, p_variant text)` (migration `20251027_get_next_step.sql`)
+  - SECURITY DEFINER; returns first incomplete step for variant-aware Continue heuristic
+  - Used by ProgressService.getNextStep() in client
+- DB: Migration `20251027003100_technique_display_order.sql` adds `display_order` (smallint) + index for catalog sort
+- DB: Migration `20251027003200_performance_indexes.sql` adds indexes (idx_ts_variant_idx, idx_usp_user)
+- Seeds: Content baseline (20 techniques, 94 steps gi/nogi) imported via `server/supabase/scripts/seed_import.ts`
+  - Deterministic UUID v5 (stable IDs), idempotent upserts (ON CONFLICT DO UPDATE)
+  - Content: technique titles/categories, step titles/cues (EN/DE) – NO PII, only instructional text
 - Edge Function (docs only, no PII): `gating_check_step_access`
   - CORS Whitelist (ENV), Rate Limiting (Upstash), structured JSON logs with `userIdHash` (SHA‑256), env fail‑fast
+- UI: Learn screen (category grid, technique list) + Continue card with getNextStep heuristic + gating (idx≥3 → paywall)
 
 ## Data Categories and PII
 

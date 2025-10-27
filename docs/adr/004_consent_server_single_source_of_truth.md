@@ -106,7 +106,7 @@ Analytics-Consent wird serverseitig als SoT (`user_profile.consent_analytics`) g
   - `app/lib/core/services/consent_service.dart` (Client-Sync)
   - `server/supabase/rpc/ensure_user_profile.sql` (RPC)
   - `app/lib/main.dart` (Login-Hook)
-- **Migration:** `server/supabase/migrations/20251026_user_profile.sql` (Spalte bereits vorhanden aus Sprint 3)
+- **Migration:** `supabase/migrations/20251022_user_profile.sql` (Spalte bereits vorhanden aus Sprint 3)
 - **Tests:** `app/test/services/consent_service_test.dart` (TODO: Mock-Tests für Sync)
 
 ---

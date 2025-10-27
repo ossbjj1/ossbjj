@@ -32,14 +32,16 @@ Repo-Struktur (SSOT)
       consent/
   pubspec.yaml
 
-/server/supabase/
+/supabase/
   migrations/
-  policies/
   functions/
     gating_step_complete/
     rc_webhook/
     health/
   rpc/delete_user_data.sql
+
+/server/supabase/
+  _migrations_archive/  (archived, do not use)
 
 /seeds/ {techniques.json, steps.json, content_roadmap.json, achievements.json, testimonials.json}
 /design/ {tokens/, assets/}
@@ -52,7 +54,7 @@ README.md
 ```
 - **Features:** 1 Ordner pro Screen/Flow (z.B. `features/home/`, `features/stats/`)
 - **Core:** Shared Code (services, design_tokens, utils)
-- **Migrations:** SQL-Dateien chronologisch (`001_initial.sql`, `002_achievements.sql`)
+- **Migrations (SSOT):** `supabase/migrations/` – SQL-Dateien chronologisch (`001_initial.sql`, `002_achievements.sql`)
 - **Functions:** 1 Ordner pro Edge Fn (z.B. `gating_step_complete/index.ts`)
 - **Seeds:** JSON-Dateien für Testdaten (techniques, steps, roadmap, achievements, testimonials)
 

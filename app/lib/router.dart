@@ -13,6 +13,7 @@ import 'core/services/progress_service.dart';
 import 'core/services/gating_service.dart';
 import 'features/home/home_screen.dart';
 import 'features/learn/learn_screen.dart';
+import 'features/learn/technique_list_screen.dart';
 import 'features/stats/stats_screen.dart';
 import 'features/settings/settings_screen.dart';
 import 'features/consent/consent_modal.dart';
@@ -96,6 +97,15 @@ GoRouter createRouter({
             path: AppRoutes.learnPath,
             name: AppRoutes.learnName,
             builder: (context, state) => const LearnScreen(),
+            routes: [
+              GoRoute(
+                path: 'category/:category',
+                builder: (context, state) {
+                  final category = state.pathParameters['category']!;
+                  return TechniqueListScreen(category: category);
+                },
+              ),
+            ],
           ),
           GoRoute(
             path: AppRoutes.statsPath,

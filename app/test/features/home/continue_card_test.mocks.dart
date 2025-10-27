@@ -121,4 +121,15 @@ class MockProgressService extends _i1.Mock implements _i4.ProgressService {
         returnValue: _i3.Future<void>.value(),
         returnValueForMissingStub: _i3.Future<void>.value(),
       ) as _i3.Future<void>);
+
+  @override
+  _i3.Future<_i4.NextStepResult?> getNextStep({String? preferredVariant}) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getNextStep,
+          [],
+          {#preferredVariant: preferredVariant},
+        ),
+        returnValue: _i3.Future<_i4.NextStepResult?>.value(),
+      ) as _i3.Future<_i4.NextStepResult?>);
 }
