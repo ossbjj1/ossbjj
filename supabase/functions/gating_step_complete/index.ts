@@ -311,7 +311,11 @@ serve(async (req) => {
 
     const result = (rpcData as unknown as CompleteStepResponse[])?.[0];
     if (!result) {
-      await log("rpc_no_result", { reqId, userIdHash, technique_step_id }, "error");
+      await log(
+        "rpc_no_result",
+        { reqId, userIdHash, technique_step_id },
+        "error",
+      );
       return resp({ error: "server_error" }, 500, corsHeaders);
     }
 

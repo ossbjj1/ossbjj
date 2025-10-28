@@ -71,7 +71,7 @@ class GatingService {
 
   /// Complete step (idempotent).
   /// Sprint 4.1+: Server-authoritative completion via Edge Function.
-  /// Edge Function enforces auth, prerequisite, gating, then calls RPC with service_role.
+  /// Edge Function enforces auth, prerequisite, gating, then completes securely on the server.
   /// Returns {success, idempotent, message} or throws domain error.
   Future<CompleteResult> completeStep(String techniqueStepId) async {
     final user = Supabase.instance.client.auth.currentUser;
