@@ -6,6 +6,8 @@ import '../../core/navigation/routes.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/services/locale_service.dart';
 import '../../core/services/audio_service.dart';
+import '../../core/services/consent_service.dart';
+import '../../core/services/analytics_service.dart';
 
 /// Settings Screen (Sprint 3).
 ///
@@ -16,17 +18,95 @@ class SettingsScreen extends StatefulWidget {
     required this.authService,
     required this.localeService,
     required this.audioService,
+    required this.consentService,
+    required this.analyticsService,
   });
 
   final AuthService authService;
   final LocaleService localeService;
   final AudioService audioService;
+  final ConsentService consentService;
+  final AnalyticsService analyticsService;
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  bool _analyticsConsent = false;
+  bool _mediaConsent = false;
+  
+  @override
+  void initState() {
+    super.initState();
+    _loadConsent();
+  }
+  
+  Future<void> _loadConsent() async {
+    final analytics = widget.consentService.analytics;
+    final media = widget.consentService.media;
+    if (mounted) {
+      setState(() {
+        _analyticsConsent = analytics;
+        _mediaConsent = media;
+      });
+    }
+  }
+  
+  Future<void> _handleAnalyticsToggle(bool value) async {
+    final priorValue = _analyticsConsent;
+    
+    // Optimistic update
+    setState(() => _analyticsConsent = value);
+    
+    try {
+      await widget.consentService.setServerAnalytics(value);
+      
+      // Live init/deinit analytics
+      if (value) {
+        await widget.analyticsService.initIfAllowed(analyticsAllowed: true);
+      } else {
+        // No teardown API, just prevent future tracking
+        // (Service checks _initialized flag)
+      }
+    } catch (e) {
+      debugPrint('Analytics toggle failed: $e');
+      // Revert on failure
+      if (mounted) {
+        setState(() => _analyticsConsent = priorValue);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(StringsScope.of(context).settingsUpdateError),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+  
+  Future<void> _handleMediaToggle(bool value) async {
+    final priorValue = _mediaConsent;
+    
+    // Optimistic update
+    setState(() => _mediaConsent = value);
+    
+    try {
+      await widget.consentService.setMedia(value);
+    } catch (e) {
+      debugPrint('Media toggle failed: $e');
+      // Revert on failure
+      if (mounted) {
+        setState(() => _mediaConsent = priorValue);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(StringsScope.of(context).settingsUpdateError),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+  
   Future<void> _handleLogout(BuildContext context) async {
     try {
       await widget.authService.signOut();
@@ -147,9 +227,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
           const Divider(),
+          // Privacy & Consent Section (Sprint 4)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Text(
+              t.consentHeadline,
+              style: const TextStyle(
+                color: DsColors.textSecondary,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          SwitchListTile(
+            secondary: const Icon(Icons.analytics_outlined),
+            title: Text(t.consentAnalyticsLabel),
+            subtitle: Text(t.consentAnalyticsSub),
+            value: _analyticsConsent,
+            onChanged: _handleAnalyticsToggle,
+          ),
+          SwitchListTile(
+            secondary: const Icon(Icons.video_library_outlined),
+            title: Text(t.consentMediaLabel),
+            subtitle: Text(t.consentMediaSub),
+            value: _mediaConsent,
+            onChanged: _handleMediaToggle,
+          ),
           ListTile(
             leading: const Icon(Icons.privacy_tip_outlined),
             title: Text(t.settingsPrivacy),
+            subtitle: const Text('View detailed privacy settings'),
             onTap: () => context.go(AppRoutes.consentPath),
           ),
           const Divider(),

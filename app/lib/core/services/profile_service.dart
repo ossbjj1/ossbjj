@@ -52,7 +52,7 @@ class ProfileService {
   /// Validates required fields and ranges before persisting.
   /// Throws ProfileValidationException if validation fails.
   /// Throws UserNotAuthenticatedException if user not logged in.
-  /// 
+  ///
   /// [draft] flag allows saving incomplete profiles (e.g. autosave during onboarding).
   /// When true, skips validation. Default: false.
   Future<void> upsert(UserProfile profile, {bool draft = false}) async {

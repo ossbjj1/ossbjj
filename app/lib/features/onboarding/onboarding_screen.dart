@@ -36,7 +36,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   String? _goalType;
   String? _ageGroup;
   bool _saving = false;
-  
+
   // Timer state (Sprint 4)
   Timer? _timer;
   DateTime? _firstInputAt;
@@ -45,40 +45,40 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   static const _autosaveThresholdSec = 60;
 
   bool get _canSave => _belt != null && _expRange != null && _goalType != null;
-  
+
   @override
   void dispose() {
     _timer?.cancel();
     super.dispose();
   }
-  
+
   /// Start timer on first user input (Sprint 4).
   void _startTimerIfNeeded() {
     if (_firstInputAt != null) return; // Already started
-    
+
     _firstInputAt = DateTime.now();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) {
         timer.cancel();
         return;
       }
-      
+
       setState(() {
         _elapsedSeconds = DateTime.now().difference(_firstInputAt!).inSeconds;
       });
-      
+
       // Autosave at 60s (once)
       if (_elapsedSeconds >= _autosaveThresholdSec && !_autosaved) {
         _autosave();
       }
     });
   }
-  
+
   /// Autosave draft profile at 60s (Sprint 4).
   Future<void> _autosave() async {
     if (_autosaved) return;
     _autosaved = true;
-    
+
     try {
       final profile = UserProfile(
         belt: _belt,
@@ -87,9 +87,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         goalType: _goalType,
         ageGroup: _ageGroup,
       );
-      
+
       await widget.profileService.upsert(profile, draft: true);
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -99,7 +99,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
         );
       }
-      
+
       // Telemetry (if consent granted)
       if (widget.consentService.analytics) {
         widget.analyticsService.track('onboarding_autosave', {
@@ -127,7 +127,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       );
 
       await widget.profileService.upsert(profile); // draft=false (default)
-      
+
       // Telemetry (if consent granted)
       if (widget.consentService.analytics) {
         widget.analyticsService.track('onboarding_complete', {

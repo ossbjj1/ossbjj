@@ -119,6 +119,8 @@ GoRouter createRouter({
               authService: authService,
               localeService: localeService,
               audioService: audioService,
+              consentService: consentService,
+              analyticsService: analyticsService,
             ),
           ),
         ],
