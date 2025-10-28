@@ -1,8 +1,7 @@
 -- 20251027_get_next_step.sql
 -- Deploy get_next_step RPC (variant-aware, incomplete-only)
 
-CREATE OR REPLACE FUNCTION get_next_step(
-  p_user_id UUID,
+CREATE OR REPLACE FUNCTION public.get_next_step(
   p_variant TEXT DEFAULT 'gi'
 )
 RETURNS TABLE (
@@ -12,7 +11,14 @@ RETURNS TABLE (
   idx INT,
   variant TEXT
 ) AS $$
+DECLARE
+  v_user_id uuid;
 BEGIN
+  v_user_id := auth.uid();
+  IF v_user_id IS NULL THEN
+    RAISE EXCEPTION 'not authenticated';
+  END IF;
+
   RETURN QUERY
   SELECT
     ts.id AS step_id,
@@ -22,10 +28,12 @@ BEGIN
     ts.variant
   FROM technique_step ts
   INNER JOIN technique t ON ts.technique_id = t.id
-  LEFT JOIN user_step_progress usp ON usp.technique_step_id = ts.id AND usp.user_id = p_user_id
+  LEFT JOIN user_step_progress usp
+    ON usp.technique_step_id = ts.id
+    AND usp.user_id = v_user_id
   WHERE usp.technique_step_id IS NULL
     AND ts.variant = p_variant
   ORDER BY t.display_order ASC, ts.idx ASC
   LIMIT 1;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;

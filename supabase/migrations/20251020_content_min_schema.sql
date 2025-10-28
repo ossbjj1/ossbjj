@@ -13,7 +13,7 @@ create table if not exists public.technique (
 -- technique_step (minimal)
 create table if not exists public.technique_step (
   id uuid primary key,
-  technique_id uuid,
+  technique_id uuid not null references public.technique(id) on delete cascade,
   variant text not null check (variant in ('gi','nogi')),
   idx int not null,
   title_en text,

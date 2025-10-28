@@ -82,8 +82,8 @@ begin
         check (entitlement in ('free','trial','pro'));
   end if;
 end$$;
--- 2) Enable RLS
-alter table public.user_profile enable row level security;
+-- 2) Force RLS (prevent owner bypass)
+alter table public.user_profile force row level security;
 -- 3) RLS Policies (idempotent)
 do $$
 begin
@@ -95,22 +95,30 @@ begin
       for select using (auth.uid() = user_id);
   end if;
 
-  -- INSERT: user can create own profile
+  -- INSERT: user can create own profile (free tier, non-trial only)
   if not exists (
     select 1 from pg_policies where tablename='user_profile' and policyname='up_insert_own'
   ) then
     create policy up_insert_own on public.user_profile
-      for insert with check (auth.uid() = user_id);
+      for insert with check (
+        auth.uid() = user_id
+        AND entitlement = 'free'
+        AND (trial_end_at IS NULL)
+      );
   end if;
 
-  -- UPDATE: user can update own profile (with CHECK to ensure row still satisfies ownership)
+  -- UPDATE: user can update own profile (but not entitlement/trial_end_at)
   if not exists (
     select 1 from pg_policies where tablename='user_profile' and policyname='up_update_own'
   ) then
     create policy up_update_own on public.user_profile
       for update
         using (auth.uid() = user_id)
-        with check (auth.uid() = user_id);
+        with check (
+          auth.uid() = user_id
+          AND entitlement = (SELECT entitlement FROM public.user_profile WHERE user_id = auth.uid())
+          AND trial_end_at IS NOT DISTINCT FROM (SELECT trial_end_at FROM public.user_profile WHERE user_id = auth.uid())
+        );
   end if;
 end$$;
 -- 4) Trigger for updated_at
