@@ -45,6 +45,8 @@ BEGIN
   END IF;
 END;
 $$;
--- Restrict EXECUTE to authenticated users only
+-- Restrict EXECUTE to service_role only (called via Edge Function)
+-- ⚠️ IMPORTANT: Deploy Edge Function gating_step_complete BEFORE applying this migration
 REVOKE EXECUTE ON FUNCTION public.mark_step_complete(uuid) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.mark_step_complete(uuid) TO authenticated;
+REVOKE EXECUTE ON FUNCTION public.mark_step_complete(uuid) FROM authenticated;
+GRANT EXECUTE ON FUNCTION public.mark_step_complete(uuid) TO service_role;

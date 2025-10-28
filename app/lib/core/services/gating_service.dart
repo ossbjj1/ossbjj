@@ -70,34 +70,75 @@ class GatingService {
   }
 
   /// Complete step (idempotent).
-  /// Sprint 4.1: Server-authoritative completion via RPC mark_step_complete.
-  /// Prevents duplicate completions via PK conflict; returns {success,idempotent,message}.
+  /// Sprint 4.1+: Server-authoritative completion via Edge Function.
+  /// Edge Function enforces auth, prerequisite, gating, then calls RPC with service_role.
+  /// Returns {success, idempotent, message} or throws domain error.
   Future<CompleteResult> completeStep(String techniqueStepId) async {
     final user = Supabase.instance.client.auth.currentUser;
     if (user == null) {
-      throw Exception('Cannot complete step: user not logged in');
+      throw const GatingException(
+        type: GatingErrorType.unauthorized,
+        message: 'User not logged in',
+      );
     }
 
     try {
-      // Check access first (server-side validation)
-      final access = await checkStepAccess(techniqueStepId);
-      if (!access.allowed) {
-        return CompleteResult(
-          success: false,
-          idempotent: false,
-          message: 'Access denied: ${access.reason}',
+      // Call Edge Function gating_step_complete
+      final response = await Supabase.instance.client.functions.invoke(
+        'gating_step_complete',
+        body: {'technique_step_id': techniqueStepId},
+      );
+
+      // Handle error responses
+      if (response.status == 401) {
+        throw const GatingException(
+          type: GatingErrorType.unauthorized,
+          message: 'Authentication required',
         );
       }
 
-      // Call RPC mark_step_complete (idempotent via PK conflict)
-      final response =
-          await Supabase.instance.client.rpc('mark_step_complete', params: {
-        'p_technique_step_id': techniqueStepId,
-      }).single();
+      if (response.status == 402) {
+        throw const GatingException(
+          type: GatingErrorType.paymentRequired,
+          message: 'Premium subscription required',
+        );
+      }
 
-      final success = response['success'] as bool? ?? false;
-      final idempotent = response['idempotent'] as bool? ?? false;
-      final message = response['message'] as String? ?? 'unknown';
+      if (response.status == 409) {
+        throw const GatingException(
+          type: GatingErrorType.prerequisiteMissing,
+          message: 'Complete previous step first',
+        );
+      }
+
+      if (response.status == 429) {
+        final retryAfter = response.data?['retryAfter'] as int? ?? 2;
+        throw GatingException(
+          type: GatingErrorType.rateLimited,
+          message: 'Rate limited, retry after ${retryAfter}s',
+        );
+      }
+
+      if (response.status != 200) {
+        throw GatingException(
+          type: GatingErrorType.serverError,
+          message: 'Server error: ${response.status}',
+        );
+      }
+
+      // Parse success response
+      final raw = response.data;
+      if (raw is! Map) {
+        throw const GatingException(
+          type: GatingErrorType.serverError,
+          message: 'Malformed response',
+        );
+      }
+      final data = Map<String, dynamic>.from(raw);
+
+      final success = data['success'] as bool? ?? false;
+      final idempotent = data['idempotent'] as bool? ?? false;
+      final message = data['message'] as String? ?? 'unknown';
 
       _logger.i(
           'Step completed: $techniqueStepId (success: $success, idempotent: $idempotent)');
@@ -107,9 +148,14 @@ class GatingService {
         idempotent: idempotent,
         message: message,
       );
+    } on GatingException {
+      rethrow;
     } catch (e, stackTrace) {
       _logger.e('completeStep failed', error: e, stackTrace: stackTrace);
-      rethrow;
+      throw GatingException(
+        type: GatingErrorType.serverError,
+        message: 'Unexpected error: $e',
+      );
     }
   }
 }
@@ -144,4 +190,27 @@ class CompleteResult {
   final bool success;
   final bool idempotent; // True if already completed
   final String message;
+}
+
+/// Gating error types.
+enum GatingErrorType {
+  unauthorized,
+  paymentRequired,
+  prerequisiteMissing,
+  rateLimited,
+  serverError,
+}
+
+/// Gating exception (domain error).
+class GatingException implements Exception {
+  const GatingException({
+    required this.type,
+    required this.message,
+  });
+
+  final GatingErrorType type;
+  final String message;
+
+  @override
+  String toString() => 'GatingException($type): $message';
 }
