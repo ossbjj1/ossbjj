@@ -5,8 +5,13 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 /// Checks access & completes steps.
 /// MVP: Client-side logic; Edge Fn migration planned.
 class GatingService {
-  GatingService({Logger? logger}) : _logger = logger ?? Logger();
+  GatingService({
+    SupabaseClient? client,
+    Logger? logger,
+  })  : _client = client ?? Supabase.instance.client,
+        _logger = logger ?? Logger();
 
+  final SupabaseClient _client;
   final Logger _logger;
 
   /// Check if user can access step (server-authoritative).
@@ -14,7 +19,7 @@ class GatingService {
   /// Cannot be bypassed via app binary manipulation.
   Future<GatingAccess> checkStepAccess(String techniqueStepId) async {
     try {
-      final response = await Supabase.instance.client.functions.invoke(
+      final response = await _client.functions.invoke(
         'gating_check_step_access',
         body: {'techniqueStepId': techniqueStepId},
       );
@@ -74,7 +79,7 @@ class GatingService {
   /// Edge Function enforces auth, prerequisite, gating, then completes securely on the server.
   /// Returns {success, idempotent, message} or throws domain error.
   Future<CompleteResult> completeStep(String techniqueStepId) async {
-    final user = Supabase.instance.client.auth.currentUser;
+    final user = _client.auth.currentUser;
     if (user == null) {
       throw const GatingException(
         type: GatingErrorType.unauthorized,
@@ -84,7 +89,7 @@ class GatingService {
 
     try {
       // Call Edge Function gating_step_complete
-      final response = await Supabase.instance.client.functions.invoke(
+      final response = await _client.functions.invoke(
         'gating_step_complete',
         body: {'technique_step_id': techniqueStepId},
       );

@@ -1,7 +1,10 @@
 # Server-Authoritative Gating Deployment
 
 ## Overview
-This document describes the deployment order for migrating step completion from direct client RPC to server-authoritative Edge Function gating.
+
+This document describes the deployment order for migrating step
+completion from direct client RPC to server-authoritative Edge Function
+gating.
 
 ## Components
 1. **Edge Function** (`supabase/functions/gating_step_complete/index.ts`)
@@ -29,11 +32,12 @@ cd /Volumes/Project_SSD/OSS/oss
 supabase functions deploy gating_step_complete --project-ref xqgqentkowzxckwlmyqc
 
 # Verify health (manual test)
-curl -X POST https://xqgqentkowzxckwlmyqc.supabase.co/functions/v1/gating_step_complete \
+curl -X POST \
+  https://xqgqentkowzxckwlmyqc.supabase.co/functions/v1/gating_step_complete \
   -H "Authorization: Bearer <user-jwt>" \
   -H "Content-Type: application/json" \
   -d '{"technique_step_id": "<test-uuid>"}'
-# Expected: 200 {success: true, ...} or 402 {error: "payment_required"}
+# Expected: 200 {success} or 402 {error: "payment_required"}
 ```
 
 ### Phase 2: Deploy Client Update (Backward Compatible)
@@ -121,9 +125,10 @@ GROUP BY usename;
 ## Testing Checklist
 
 ### Pre-Deployment (Local)
+
 - [ ] Edge Function smoke test (curl with valid/invalid JWT)
 - [ ] Client unit tests pass (error mapping)
-- [ ] Flutter analyze + format clean
+- [ ] Flutter analyze and format clean
 
 ### Phase 1 (Edge Function Deployed)
 - [ ] Health check: `curl /functions/v1/gating_step_complete` returns 401 (no auth)

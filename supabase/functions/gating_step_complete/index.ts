@@ -290,16 +290,29 @@ serve(async (req) => {
       }
     }
 
-    // 7. Call RPC with service_role to mark step complete
+    // 7. Call RPC with service_role but forwarded user JWT for auth.uid()
     const supabaseServiceClient = createClient(
       supabaseUrl,
       supabaseServiceRoleKey,
+      {
+        global: { headers: { Authorization: authHeader } },
+      },
     );
 
     const { data: rpcData, error: rpcError } = await supabaseServiceClient
       .rpc("mark_step_complete", { p_technique_step_id: technique_step_id });
 
     if (rpcError) {
+      // Detect unauthorized from RPC (auth.uid() failed)
+      if (rpcError.message && rpcError.message.includes("not authenticated")) {
+        log("rpc_unauthorized", {
+          reqId,
+          userIdHash,
+          technique_step_id,
+          error: rpcError.message,
+        }, "warn");
+        return resp({ error: "unauthorized" }, 401, corsHeaders);
+      }
       log("rpc_error", {
         reqId,
         userIdHash,
