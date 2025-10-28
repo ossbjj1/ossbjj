@@ -66,3 +66,4 @@ flutter:
     - assets/icons/
     - assets/images/
     - assets/animations/
+    # Splash image expected at assets/images/splash_logo.png

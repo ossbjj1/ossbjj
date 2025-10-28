@@ -29,7 +29,8 @@ void main() async {
       anonKey: Env.supabaseAnonKey,
     );
   } else {
-    logger.w('Supabase not configured (SUPABASE_URL / SUPABASE_ANON_KEY missing).');
+    logger.w(
+        'Supabase not configured (SUPABASE_URL / SUPABASE_ANON_KEY missing).');
   }
 
   // Initialize services (Sprint 3 + Sprint 4) with shared logger
