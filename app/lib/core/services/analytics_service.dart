@@ -112,7 +112,7 @@ class AnalyticsService {
 
     try {
       if (Env.hasSentry) {
-        await SentryFlutter.close();
+        await Sentry.close();
         _logger.i('Sentry closed (analytics opt-out)');
       }
       _initialized = false;
