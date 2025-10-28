@@ -26,16 +26,17 @@ class TechniqueRepository {
             Exception('Unexpected response type: ${response.runtimeType}'));
       }
 
-      final categories = <String>{};
+      final categories = <String>[];
+      final seen = <String>{};
       for (final row in response) {
         if (row is Map<String, dynamic>) {
           final category = row['category'];
-          if (category != null) {
+          if (category != null && seen.add(category.toString())) {
             categories.add(category.toString());
           }
         }
       }
-      return categories.toList();
+      return categories;
     } on TimeoutException catch (e) {
       throw TechniqueLoadFailure('categories', e);
     } on PostgrestException catch (e) {
