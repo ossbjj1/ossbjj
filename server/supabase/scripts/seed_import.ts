@@ -235,7 +235,8 @@ async function main() {
   console.log("⚙️  Upserting steps...");
   for (const row of stepRows) {
     const { error } = await supabase.from("technique_step").upsert(row, {
-      onConflict: "id",
+      onConflict: "technique_id,variant,idx",
+      ignoreDuplicates: false,
     });
     if (error) {
       console.error(`❌ Step upsert failed (${row.id}):`, error.message);

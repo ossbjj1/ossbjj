@@ -111,8 +111,8 @@ void main() {
 
       // Mock gating to allow access (server decides, even for idx < 3)
       when(mockGatingService.checkStepAccess('step-123')).thenAnswer(
-        (_) async => const GatingAccess(
-            allowed: true, reason: GatingReason.free),
+        (_) async =>
+            const GatingAccess(allowed: true, reason: GatingReason.free),
       );
 
       await tester.pumpWidget(createTestWidget(nextStep: nextStep));
