@@ -115,8 +115,20 @@ async function main() {
     Deno.exit(1);
   }
 
-  const techniques: Technique[] = JSON.parse(techniquesRaw);
-  const steps: Step[] = JSON.parse(stepsRaw);
+  let techniques: Technique[];
+  let steps: Step[];
+  try {
+    techniques = JSON.parse(techniquesRaw);
+  } catch (e) {
+    console.error(`❌ Failed to parse ${techniquesPath}:`, e.message);
+    Deno.exit(1);
+  }
+  try {
+    steps = JSON.parse(stepsRaw);
+  } catch (e) {
+    console.error(`❌ Failed to parse ${stepsPath}:`, e.message);
+    Deno.exit(1);
+  }
 
   console.log(`📦 Loaded ${techniques.length} techniques, ${steps.length} steps`);
 
