@@ -15,12 +15,31 @@ class TechniqueDto {
   final int displayOrder;
 
   factory TechniqueDto.fromJson(Map<String, dynamic> json) {
+    final id = json['id'] as String?;
+    final category = json['category'] as String?;
+    final titleEn = json['title_en'] as String?;
+    final titleDe = json['title_de'] as String?;
+    final displayOrderRaw = json['display_order'];
+
+    if (id == null ||
+        category == null ||
+        titleEn == null ||
+        titleDe == null ||
+        displayOrderRaw == null) {
+      throw FormatException(
+          'TechniqueDto.fromJson: missing required field(s) in $json');
+    }
+
+    final displayOrder = (displayOrderRaw is num)
+        ? displayOrderRaw.toInt()
+        : int.parse(displayOrderRaw.toString());
+
     return TechniqueDto(
-      id: json['id'] as String,
-      category: json['category'] as String,
-      titleEn: json['title_en'] as String,
-      titleDe: json['title_de'] as String,
-      displayOrder: json['display_order'] as int,
+      id: id,
+      category: category,
+      titleEn: titleEn,
+      titleDe: titleDe,
+      displayOrder: displayOrder,
     );
   }
 }
@@ -46,14 +65,40 @@ class TechniqueStepDto {
   final int durationS;
 
   factory TechniqueStepDto.fromJson(Map<String, dynamic> json) {
+    // Validate required keys
+    final id = json['id'] as String?;
+    final techniqueId = json['technique_id'] as String?;
+    final variant = json['variant'] as String?;
+    final idxRaw = json['idx'];
+    final titleEn = json['title_en'] as String?;
+    final titleDe = json['title_de'] as String?;
+    final durationSRaw = json['duration_s'];
+
+    if (id == null ||
+        techniqueId == null ||
+        variant == null ||
+        idxRaw == null ||
+        titleEn == null ||
+        titleDe == null ||
+        durationSRaw == null) {
+      throw FormatException(
+          'TechniqueStepDto.fromJson: missing required field(s) in $json');
+    }
+
+    // Coerce numeric fields
+    final idx = (idxRaw is num) ? idxRaw.toInt() : int.parse(idxRaw.toString());
+    final durationS = (durationSRaw is num)
+        ? durationSRaw.toInt()
+        : int.parse(durationSRaw.toString());
+
     return TechniqueStepDto(
-      id: json['id'] as String,
-      techniqueId: json['technique_id'] as String,
-      variant: json['variant'] as String,
-      idx: json['idx'] as int,
-      titleEn: json['title_en'] as String,
-      titleDe: json['title_de'] as String,
-      durationS: json['duration_s'] as int,
+      id: id,
+      techniqueId: techniqueId,
+      variant: variant,
+      idx: idx,
+      titleEn: titleEn,
+      titleDe: titleDe,
+      durationS: durationS,
     );
   }
 }

@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:convert';
 
+import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -9,10 +11,13 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 /// to avoid partial state on crash.
 /// Sprint 4: getNextStep heuristic.
 class ProgressService {
-  ProgressService(this._supabase);
+  ProgressService(this._supabase, {Logger? logger})
+      : _logger = logger ?? Logger();
 
   final SupabaseClient _supabase;
+  final Logger _logger;
   static const _keyHint = 'app.continue_hint';
+  static const _rpcTimeout = Duration(seconds: 8);
 
   /// Load last step hint from atomic JSON storage.
   /// Returns null if no hint saved or JSON is malformed (tolerant read).
@@ -63,26 +68,55 @@ class ProgressService {
       String variant =
           preferredVariant ?? await _getLastVariant(user.id) ?? 'gi';
 
-      // Fetch first incomplete step (RPC with variant filter)
+      // Fetch first incomplete step (RPC with variant filter, auth.uid() used server-side)
       final response = await _supabase.rpc('get_next_step', params: {
-        'p_user_id': user.id,
         'p_variant': variant,
-      });
+      }).timeout(_rpcTimeout);
 
-      if (response == null || (response as List).isEmpty) {
+      // Type-safe response parsing
+      if (response == null) {
         return null;
       }
 
-      final row = response.first as Map<String, dynamic>;
+      if (response is! List || response.isEmpty) {
+        return null;
+      }
+
+      final first = response.first;
+      if (first is! Map<String, dynamic>) {
+        _logger.w('RPC get_next_step returned non-map row');
+        return null;
+      }
+
+      // Validate field types
+      final stepId = first['step_id'];
+      final titleEn = first['title_en'];
+      final titleDe = first['title_de'];
+      final idx = first['idx'];
+      final variantField = first['variant'];
+
+      if (stepId is! String ||
+          titleEn is! String ||
+          titleDe is! String ||
+          idx is! int ||
+          variantField is! String) {
+        _logger.e('RPC get_next_step returned invalid field types');
+        return null;
+      }
+
       return NextStepResult(
-        stepId: row['step_id'] as String,
-        titleEn: row['title_en'] as String,
-        titleDe: row['title_de'] as String,
-        idx: row['idx'] as int,
-        variant: row['variant'] as String,
+        stepId: stepId,
+        titleEn: titleEn,
+        titleDe: titleDe,
+        idx: idx,
+        variant: variantField,
       );
-    } catch (e) {
+    } on TimeoutException catch (e, stackTrace) {
+      _logger.e('RPC get_next_step timeout', error: e, stackTrace: stackTrace);
+      return null;
+    } catch (e, stackTrace) {
       // Tolerate errors (offline, RLS, missing RPC, etc.)
+      _logger.w('RPC get_next_step failed', error: e, stackTrace: stackTrace);
       return null;
     }
   }
@@ -96,7 +130,8 @@ class ProgressService {
           .select('technique_step!inner(variant)')
           .eq('user_id', userId)
           .order('completed_at', ascending: false)
-          .limit(1);
+          .limit(1)
+          .timeout(_rpcTimeout);
 
       if (response.isEmpty) {
         return null;
@@ -105,7 +140,13 @@ class ProgressService {
       final row = response.first as Map<String, dynamic>;
       final stepData = row['technique_step'] as Map<String, dynamic>;
       return stepData['variant'] as String;
-    } catch (e) {
+    } on TimeoutException catch (e, stackTrace) {
+      _logger.e('Query _getLastVariant timeout',
+          error: e, stackTrace: stackTrace);
+      return null;
+    } catch (e, stackTrace) {
+      _logger.w('Query _getLastVariant failed',
+          error: e, stackTrace: stackTrace);
       return null;
     }
   }

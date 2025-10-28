@@ -1,8 +1,8 @@
 -- 20251027_get_next_step.sql
 -- Deploy get_next_step RPC (variant-aware, incomplete-only)
+-- Hardened: auth.uid() validation + search_path
 
 CREATE OR REPLACE FUNCTION get_next_step(
-  p_user_id UUID,
   p_variant TEXT DEFAULT 'gi'
 )
 RETURNS TABLE (
@@ -11,8 +11,21 @@ RETURNS TABLE (
   title_de TEXT,
   idx INT,
   variant TEXT
-) AS $$
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = pg_catalog, public
+AS $$
+DECLARE
+  v_user_id UUID;
 BEGIN
+  -- Trust boundary: derive user_id from auth.uid() (server-side)
+  v_user_id := auth.uid();
+  
+  IF v_user_id IS NULL THEN
+    RAISE EXCEPTION 'User not authenticated';
+  END IF;
+
   RETURN QUERY
   SELECT
     ts.id AS step_id,
@@ -22,10 +35,10 @@ BEGIN
     ts.variant
   FROM technique_step ts
   INNER JOIN technique t ON ts.technique_id = t.id
-  LEFT JOIN user_step_progress usp ON usp.technique_step_id = ts.id AND usp.user_id = p_user_id
+  LEFT JOIN user_step_progress usp ON usp.technique_step_id = ts.id AND usp.user_id = v_user_id
   WHERE usp.technique_step_id IS NULL
     AND ts.variant = p_variant
   ORDER BY t.display_order ASC, ts.idx ASC
   LIMIT 1;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$;

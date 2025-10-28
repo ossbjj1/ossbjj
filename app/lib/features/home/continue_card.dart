@@ -135,22 +135,20 @@ class _ContinueCardState extends State<ContinueCard> {
     );
   }
 
-  /// Handle continue button press (Sprint 4: gating idx>=3 + navigation).
+  /// Handle continue button press (Sprint 4: server-side gating for all steps).
   /// Uses State's context property to avoid use_build_context_synchronously warnings.
   Future<void> _handleContinue(NextStepResult nextStep) async {
     try {
-      // Gating: Steps 1-2 free, idx>=3 requires premium
-      if (nextStep.idx >= 3) {
-        final access =
-            await widget.gatingService.checkStepAccess(nextStep.stepId);
+      // Server-side gating check for all steps (no client-side threshold)
+      final access =
+          await widget.gatingService.checkStepAccess(nextStep.stepId);
 
-        if (!mounted) return;
+      if (!mounted) return;
 
-        if (!access.allowed) {
-          // Navigate to paywall
-          context.go(AppRoutes.paywallPath);
-          return;
-        }
+      if (!access.allowed) {
+        // Navigate to paywall
+        context.go(AppRoutes.paywallPath);
+        return;
       }
 
       if (!mounted) return;

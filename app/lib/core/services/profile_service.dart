@@ -52,10 +52,15 @@ class ProfileService {
   /// Validates required fields and ranges before persisting.
   /// Throws ProfileValidationException if validation fails.
   /// Throws UserNotAuthenticatedException if user not logged in.
-  Future<void> upsert(UserProfile profile) async {
+  /// 
+  /// [draft] flag allows saving incomplete profiles (e.g. autosave during onboarding).
+  /// When true, skips validation. Default: false.
+  Future<void> upsert(UserProfile profile, {bool draft = false}) async {
     try {
-      // Validate profile before any DB operations
-      _validateProfile(profile);
+      // Validate profile before any DB operations (skip for drafts)
+      if (!draft) {
+        _validateProfile(profile);
+      }
 
       final user = Supabase.instance.client.auth.currentUser;
       if (user == null) {

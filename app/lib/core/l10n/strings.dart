@@ -93,6 +93,10 @@ class Strings {
   String get onboardingSave => isDe ? 'Profil speichern' : 'Save Profile';
   String get onboardingSuccess =>
       isDe ? 'Profil gespeichert!' : 'Profile saved!';
+  String get onboardingAutosaved =>
+      isDe ? 'Automatisch gespeichert' : 'Autosaved';
+  String onboardingTimeLeft(int seconds) =>
+      isDe ? '$seconds Sek. bis Autosave' : '$seconds sec until autosave';
 
   // Belt options
   String get beltWhite => isDe ? 'Weißgurt' : 'White';

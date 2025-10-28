@@ -196,6 +196,8 @@ GoRouter createRouter({
         name: AppRoutes.onboardingName,
         builder: (context, state) => OnboardingScreen(
           profileService: profileService,
+          analyticsService: analyticsService,
+          consentService: consentService,
         ),
       ),
     ],

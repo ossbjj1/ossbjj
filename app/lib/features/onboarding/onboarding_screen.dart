@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/design_tokens/colors.dart';
@@ -6,6 +7,8 @@ import '../../core/design_tokens/typography.dart';
 import '../../core/l10n/strings.dart';
 import '../../core/navigation/routes.dart';
 import '../../core/services/profile_service.dart';
+import '../../core/services/analytics_service.dart';
+import '../../core/services/consent_service.dart';
 
 /// Onboarding Screen (Sprint 3).
 ///
@@ -14,9 +17,13 @@ class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({
     super.key,
     required this.profileService,
+    required this.analyticsService,
+    required this.consentService,
   });
 
   final ProfileService profileService;
+  final AnalyticsService analyticsService;
+  final ConsentService consentService;
 
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
@@ -29,8 +36,81 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   String? _goalType;
   String? _ageGroup;
   bool _saving = false;
+  
+  // Timer state (Sprint 4)
+  Timer? _timer;
+  DateTime? _firstInputAt;
+  int _elapsedSeconds = 0;
+  bool _autosaved = false;
+  static const _autosaveThresholdSec = 60;
 
   bool get _canSave => _belt != null && _expRange != null && _goalType != null;
+  
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+  
+  /// Start timer on first user input (Sprint 4).
+  void _startTimerIfNeeded() {
+    if (_firstInputAt != null) return; // Already started
+    
+    _firstInputAt = DateTime.now();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      
+      setState(() {
+        _elapsedSeconds = DateTime.now().difference(_firstInputAt!).inSeconds;
+      });
+      
+      // Autosave at 60s (once)
+      if (_elapsedSeconds >= _autosaveThresholdSec && !_autosaved) {
+        _autosave();
+      }
+    });
+  }
+  
+  /// Autosave draft profile at 60s (Sprint 4).
+  Future<void> _autosave() async {
+    if (_autosaved) return;
+    _autosaved = true;
+    
+    try {
+      final profile = UserProfile(
+        belt: _belt,
+        expRange: _expRange,
+        weeklyGoal: _weeklyGoal,
+        goalType: _goalType,
+        ageGroup: _ageGroup,
+      );
+      
+      await widget.profileService.upsert(profile, draft: true);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(StringsScope.of(context).onboardingAutosaved),
+            backgroundColor: DsColors.brandBlue,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+      
+      // Telemetry (if consent granted)
+      if (widget.consentService.analytics) {
+        widget.analyticsService.track('onboarding_autosave', {
+          'elapsed_seconds': _elapsedSeconds,
+        });
+      }
+    } catch (e) {
+      debugPrint('Onboarding autosave error: $e');
+      // Non-critical: don't show error to user, just log
+    }
+  }
 
   Future<void> _save() async {
     if (!_canSave) return;
@@ -46,7 +126,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         ageGroup: _ageGroup,
       );
 
-      await widget.profileService.upsert(profile);
+      await widget.profileService.upsert(profile); // draft=false (default)
+      
+      // Telemetry (if consent granted)
+      if (widget.consentService.analytics) {
+        widget.analyticsService.track('onboarding_complete', {
+          'duration_seconds': _elapsedSeconds,
+          'autosaved': _autosaved,
+        });
+      }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -77,10 +165,38 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final t = StringsScope.of(context);
+    final showCountdown = _elapsedSeconds >= 45 && !_autosaved;
+    final secondsLeft = _autosaveThresholdSec - _elapsedSeconds;
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: DsColors.bgSurface,
+        actions: [
+          // Countdown badge (visible from 45s until autosave)
+          if (showCountdown)
+            Padding(
+              padding: const EdgeInsets.only(right: DsSpacing.md),
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: DsSpacing.sm,
+                    vertical: DsSpacing.xs,
+                  ),
+                  decoration: BoxDecoration(
+                    color: DsColors.brandRed,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    t.onboardingTimeLeft(secondsLeft),
+                    style: DsTypography.bodySmall.copyWith(
+                      color: DsColors.textPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -105,7 +221,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ('brown', t.beltBrown),
                   ('black', t.beltBlack),
                 ],
-                onChanged: (v) => setState(() => _belt = v),
+                onChanged: (v) {
+                  _startTimerIfNeeded();
+                  setState(() => _belt = v);
+                },
               ),
               const SizedBox(height: DsSpacing.md),
               _buildDropdown(
@@ -116,7 +235,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ('intermediate', t.expIntermediate),
                   ('advanced', t.expAdvanced),
                 ],
-                onChanged: (v) => setState(() => _expRange = v),
+                onChanged: (v) {
+                  _startTimerIfNeeded();
+                  setState(() => _expRange = v);
+                },
               ),
               const SizedBox(height: DsSpacing.md),
               Text(
@@ -131,7 +253,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 max: 7,
                 divisions: 6,
                 label: '$_weeklyGoal',
-                onChanged: (v) => setState(() => _weeklyGoal = v.toInt()),
+                onChanged: (v) {
+                  _startTimerIfNeeded();
+                  setState(() => _weeklyGoal = v.toInt());
+                },
                 activeColor: DsColors.brandRed,
               ),
               const SizedBox(height: DsSpacing.md),
@@ -144,7 +269,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ('strength', t.goalStrength),
                   ('flexibility', t.goalFlexibility),
                 ],
-                onChanged: (v) => setState(() => _goalType = v),
+                onChanged: (v) {
+                  _startTimerIfNeeded();
+                  setState(() => _goalType = v);
+                },
               ),
               const SizedBox(height: DsSpacing.md),
               _buildDropdown(
@@ -156,7 +284,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ('30-40', t.age3040),
                   ('40+', t.age40Plus),
                 ],
-                onChanged: (v) => setState(() => _ageGroup = v),
+                onChanged: (v) {
+                  _startTimerIfNeeded();
+                  setState(() => _ageGroup = v);
+                },
               ),
               const SizedBox(height: DsSpacing.xl),
               ElevatedButton(

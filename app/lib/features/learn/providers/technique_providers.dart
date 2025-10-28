@@ -10,13 +10,13 @@ final techniqueRepositoryProvider = Provider<TechniqueRepository>((ref) {
 
 /// Categories provider (Sprint 4 MVP).
 final categoriesProvider = FutureProvider<List<String>>((ref) async {
-  final repo = ref.watch(techniqueRepositoryProvider);
+  final repo = ref.read(techniqueRepositoryProvider);
   return repo.fetchCategories();
 });
 
 /// Techniques by category provider (Sprint 4 MVP).
 final techniquesByCategoryProvider =
     FutureProvider.family<List<TechniqueDto>, String>((ref, category) async {
-  final repo = ref.watch(techniqueRepositoryProvider);
+  final repo = ref.read(techniqueRepositoryProvider);
   return repo.fetchByCategory(category);
 });

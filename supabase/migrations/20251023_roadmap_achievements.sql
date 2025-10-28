@@ -43,11 +43,17 @@ begin
       for select using (auth.uid() = user_id);
   end if;
 
+  -- ua_insert_own removed: achievements must be granted server-side
+  -- Drop existing policy if present (safe idempotent migration)
+  drop policy if exists ua_insert_own on public.user_achievement;
+
+  -- Service-role policy for server-side achievement grants
   if not exists (
-    select 1 from pg_policies where tablename='user_achievement' and policyname='ua_insert_own'
+    select 1 from pg_policies where tablename='user_achievement' and policyname='ua_insert_service'
   ) then
-    create policy ua_insert_own on public.user_achievement
-      for insert with check (auth.uid() = user_id);
+    create policy ua_insert_service on public.user_achievement
+      for insert to service_role
+      with check (true);
   end if;
 end$$;
 -- 5) Helper: calc_streak_days (counts consecutive days with ≥1 completed step)

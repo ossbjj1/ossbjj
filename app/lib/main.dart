@@ -43,7 +43,8 @@ void main() async {
   await authService.init();
 
   // Now it's safe to create services depending on Supabase.instance
-  final progressService = ProgressService(Supabase.instance.client);
+  final progressService =
+      ProgressService(Supabase.instance.client, logger: logger);
 
   // Sprint 4: Sync consent from server (if logged in)
   if (authService.currentUser != null) {

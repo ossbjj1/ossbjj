@@ -15,9 +15,29 @@ BEGIN
       ADD COLUMN display_order SMALLINT NOT NULL DEFAULT 999;
   END IF;
 END$$;
--- Create index for fast sorting (idempotent)
+
+-- Add CHECK constraint to prevent negative/overflow values (idempotent)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'technique_display_order_chk'
+      AND conrelid = 'public.technique'::regclass
+  ) THEN
+    ALTER TABLE public.technique
+      ADD CONSTRAINT technique_display_order_chk
+      CHECK (display_order BETWEEN 0 AND 32767);
+  END IF;
+END$$;
+
+-- Create composite index for category-filtered queries (idempotent)
+CREATE INDEX IF NOT EXISTS idx_technique_category_display_order
+  ON public.technique(category, display_order);
+
+-- Create single-column index for fast sorting (idempotent, optional if composite covers all queries)
 CREATE INDEX IF NOT EXISTS idx_technique_display_order
   ON public.technique(display_order);
+
 -- Document the column
 COMMENT ON COLUMN public.technique.display_order IS
-  'Sort order for Learn catalog (1..N); lower values appear first.';
+  'Sort order for Learn catalog (0..32767); lower values appear first. Default 999 places new items at the bottom until manually curated.';
