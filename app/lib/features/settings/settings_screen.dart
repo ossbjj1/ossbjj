@@ -35,13 +35,13 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _analyticsConsent = false;
   bool _mediaConsent = false;
-  
+
   @override
   void initState() {
     super.initState();
     _loadConsent();
   }
-  
+
   Future<void> _loadConsent() async {
     final analytics = widget.consentService.analytics;
     final media = widget.consentService.media;
@@ -52,16 +52,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
       });
     }
   }
-  
+
   Future<void> _handleAnalyticsToggle(bool value) async {
     final priorValue = _analyticsConsent;
-    
+
     // Optimistic update
     setState(() => _analyticsConsent = value);
-    
+
     try {
       await widget.consentService.setServerAnalytics(value);
-      
+
       // Live init/deinit analytics
       if (value) {
         await widget.analyticsService.initIfAllowed(analyticsAllowed: true);
@@ -83,13 +83,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
       }
     }
   }
-  
+
   Future<void> _handleMediaToggle(bool value) async {
     final priorValue = _mediaConsent;
-    
+
     // Optimistic update
     setState(() => _mediaConsent = value);
-    
+
     try {
       await widget.consentService.setMedia(value);
     } catch (e) {
@@ -106,7 +106,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       }
     }
   }
-  
+
   Future<void> _handleLogout(BuildContext context) async {
     try {
       await widget.authService.signOut();
