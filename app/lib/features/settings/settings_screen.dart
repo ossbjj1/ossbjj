@@ -35,6 +35,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _analyticsConsent = false;
   bool _mediaConsent = false;
+  bool _analyticsBusy = false;
 
   @override
   void initState() {
@@ -43,6 +44,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _loadConsent() async {
+    // Ensure UI reflects server-authoritative consent before showing toggles
+    try {
+      await widget.consentService.syncAnalyticsFromServer();
+    } catch (e) {
+      debugPrint('Consent sync failed (analytics): $e');
+    }
     final analytics = widget.consentService.analytics;
     final media = widget.consentService.media;
     if (mounted) {
@@ -54,20 +61,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _handleAnalyticsToggle(bool value) async {
+    // Busy guard: prevent double-tap races
+    if (_analyticsBusy) return;
+    
     final priorValue = _analyticsConsent;
-
+    setState(() => _analyticsBusy = true);
+    
     // Optimistic update
     setState(() => _analyticsConsent = value);
-
+    
     try {
       await widget.consentService.setServerAnalytics(value);
-
+      
       // Live init/deinit analytics
       if (value) {
         await widget.analyticsService.initIfAllowed(analyticsAllowed: true);
       } else {
-        // No teardown API, just prevent future tracking
-        // (Service checks _initialized flag)
+        // Active opt-out: close Sentry, disable tracking (GDPR)
+        await widget.analyticsService.optOutAndDisable();
       }
     } catch (e) {
       debugPrint('Analytics toggle failed: $e');
@@ -77,9 +88,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(StringsScope.of(context).settingsUpdateError),
-            backgroundColor: Colors.red,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _analyticsBusy = false);
       }
     }
   }

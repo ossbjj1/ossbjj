@@ -102,6 +102,26 @@ class AnalyticsService {
     }
   }
 
+  /// Opt-out and disable analytics (GDPR compliance for consent revocation).
+  /// Calls SentryFlutter.close(), clears user context, resets _initialized.
+  Future<void> optOutAndDisable() async {
+    if (!_initialized) {
+      _logger.d('Analytics not initialized, nothing to disable');
+      return;
+    }
+
+    try {
+      if (Env.hasSentry) {
+        await SentryFlutter.close();
+        _logger.i('Sentry closed (analytics opt-out)');
+      }
+      _initialized = false;
+      _logger.i('Analytics disabled (consent revoked)');
+    } catch (e, stackTrace) {
+      _logger.e('optOutAndDisable failed', error: e, stackTrace: stackTrace);
+    }
+  }
+
   /// Sentry beforeSend hook: strip PII from events.
   SentryEvent? _beforeSendSentry(SentryEvent event, {Hint? hint}) {
     // Strip all PII: email, phone, IP, username, id, name

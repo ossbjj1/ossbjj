@@ -42,3 +42,7 @@ BEGIN
   LIMIT 1;
 END;
 $$;
+
+-- Privilege gating: only authenticated users can call (matches mark_step_complete pattern)
+REVOKE ALL ON FUNCTION public.get_next_step(p_variant TEXT) FROM public;
+GRANT EXECUTE ON FUNCTION public.get_next_step(p_variant TEXT) TO authenticated;
