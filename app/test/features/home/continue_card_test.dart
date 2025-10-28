@@ -99,7 +99,7 @@ void main() {
       expect(find.text('Continue'), findsNWidgets(2)); // title + button
     });
 
-    testWidgets('navigates directly to step when idx < 3 (free)',
+    testWidgets('calls gating service and navigates when allowed (idx < 3)',
         (tester) async {
       const nextStep = NextStepResult(
         stepId: 'step-123',
@@ -109,14 +109,20 @@ void main() {
         variant: 'gi',
       );
 
+      // Mock gating to allow access (server decides, even for idx < 3)
+      when(mockGatingService.checkStepAccess('step-123')).thenAnswer(
+        (_) async => const GatingAccess(
+            allowed: true, reason: GatingReason.free),
+      );
+
       await tester.pumpWidget(createTestWidget(nextStep: nextStep));
       await tester.pumpAndSettle();
 
       await tester.tap(find.byKey(const Key('continue_card_continue_button')));
       await tester.pumpAndSettle();
 
-      // idx=1 -> no gating call, direct navigation
-      verifyNever(mockGatingService.checkStepAccess(any));
+      // Sprint 4: Server-side gating for ALL steps
+      verify(mockGatingService.checkStepAccess('step-123')).called(1);
     });
 
     testWidgets(

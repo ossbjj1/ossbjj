@@ -94,7 +94,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(StringsScope.of(context).onboardingAutosaved),
-            backgroundColor: DsColors.brandBlue,
+            backgroundColor: DsColors.stateInfo,
             duration: const Duration(seconds: 2),
           ),
         );
@@ -188,7 +188,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                   child: Text(
                     t.onboardingTimeLeft(secondsLeft),
-                    style: DsTypography.bodySmall.copyWith(
+                    style: DsTypography.bodyMedium.copyWith(
+                      fontSize: 12,
                       color: DsColors.textPrimary,
                       fontWeight: FontWeight.bold,
                     ),
