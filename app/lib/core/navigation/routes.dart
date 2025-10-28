@@ -18,6 +18,10 @@ class AppRoutes {
   static const String settingsPath = '/settings';
   static const String settingsName = 'settings';
 
+  // Splash route (initial)
+  static const String splashPath = '/splash';
+  static const String splashName = 'splash';
+
   // Modal routes (fullscreen, no bottom nav)
   static const String consentPath = '/consent';
   static const String consentName = 'consent';
@@ -56,6 +60,7 @@ class AppRoutes {
   static const Set<String> hideBottomNavRoutes = {
     '/technique/',
     '/step/',
+    splashPath,
     consentPath,
     paywallPath,
     onboardingPath,

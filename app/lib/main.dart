@@ -14,12 +14,23 @@ import 'core/services/audio_service.dart';
 import 'core/services/progress_service.dart';
 import 'core/services/gating_service.dart';
 import 'core/l10n/strings.dart';
+import 'core/config/env.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize shared logger for all services
   final logger = Logger();
+
+  // Initialize Supabase as early as possible (fail-safe if not configured)
+  if (Env.hasSupabase) {
+    await Supabase.initialize(
+      url: Env.supabaseUrl,
+      anonKey: Env.supabaseAnonKey,
+    );
+  } else {
+    logger.w('Supabase not configured (SUPABASE_URL / SUPABASE_ANON_KEY missing).');
+  }
 
   // Initialize services (Sprint 3 + Sprint 4) with shared logger
   final consentService = ConsentService(logger: logger);
@@ -28,7 +39,6 @@ void main() async {
   final profileService = ProfileService();
   final localeService = LocaleService();
   final audioService = AudioService();
-  final gatingService = GatingService(logger: logger);
 
   // Load local consent state (Sprint 2)
   await consentService.load();
@@ -45,6 +55,7 @@ void main() async {
   // Now it's safe to create services depending on Supabase.instance
   final progressService =
       ProgressService(Supabase.instance.client, logger: logger);
+  final gatingService = GatingService(logger: logger);
 
   // Sprint 4: Sync consent from server (if logged in)
   if (authService.currentUser != null) {

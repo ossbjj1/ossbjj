@@ -25,6 +25,7 @@ import 'features/legal/privacy_screen.dart';
 import 'features/legal/terms_screen.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/step_player/step_player_screen.dart';
+import 'features/splash/splash_screen.dart';
 
 /// Main router configuration for OSS app (Sprint 3).
 ///
@@ -52,8 +53,10 @@ GoRouter createRouter({
   };
 
   return GoRouter(
+    initialLocation: AppRoutes.splashPath,
     redirect: (context, state) {
       final loc = state.matchedLocation;
+      if (loc == AppRoutes.splashPath) return null;
 
       // Force consent modal on first launch, but allow legal pages
       if (forceConsent &&
@@ -124,6 +127,16 @@ GoRouter createRouter({
             ),
           ),
         ],
+      ),
+      // Splash route (initial)
+      GoRoute(
+        path: AppRoutes.splashPath,
+        name: AppRoutes.splashName,
+        builder: (context, state) => SplashScreen(
+          consentService: consentService,
+          authService: authService,
+          forceOnboarding: forceOnboarding,
+        ),
       ),
       // Modal routes (fullscreen)
       GoRoute(

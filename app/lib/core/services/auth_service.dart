@@ -12,16 +12,29 @@ class AuthService {
   final _logger = Logger();
   bool _initialized = false;
 
-  /// Initialize Supabase client (idempotent).
+  /// Initialize Supabase client (idempotent, safe if initialized elsewhere).
   Future<void> init() async {
     if (_initialized) {
-      _logger.d('Supabase already initialized');
+      _logger.d('Supabase already initialized (local flag)');
       return;
     }
 
     if (!Env.hasSupabase) {
       _logger.w('Supabase not configured, auth will fail');
       return;
+    }
+
+    // If Supabase was already initialized earlier (e.g., in main.dart),
+    // accessing Supabase.instance will succeed. Guard to avoid double init.
+    try {
+      // Will throw if not initialized yet
+      // ignore: unnecessary_statements
+      Supabase.instance.client;
+      _initialized = true;
+      _logger.d('Supabase already initialized (external)');
+      return;
+    } catch (_) {
+      // Not initialized yet; proceed to initialize
     }
 
     try {
