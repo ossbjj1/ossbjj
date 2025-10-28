@@ -63,16 +63,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _handleAnalyticsToggle(bool value) async {
     // Busy guard: prevent double-tap races
     if (_analyticsBusy) return;
-    
+
     final priorValue = _analyticsConsent;
     setState(() => _analyticsBusy = true);
-    
+
     // Optimistic update
     setState(() => _analyticsConsent = value);
-    
+
     try {
       await widget.consentService.setServerAnalytics(value);
-      
+
       // Live init/deinit analytics
       if (value) {
         await widget.analyticsService.initIfAllowed(analyticsAllowed: true);

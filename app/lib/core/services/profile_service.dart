@@ -54,23 +54,29 @@ class ProfileService {
   /// Throws UserNotAuthenticatedException if user not logged in.
   ///
   /// [draft] flag allows saving incomplete profiles (e.g. autosave during onboarding).
-  /// When true, skips validation. Default: false.
+  /// When true, runs partial validation (enums + ranges only). Default: false.
   Future<void> upsert(UserProfile profile, {bool draft = false}) async {
+    // Auth check first (before any validation/DB work)
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) {
+      throw UserNotAuthenticatedException(
+        'Cannot upsert profile: user not logged in',
+      );
+    }
+
     try {
-      // Validate profile before any DB operations (skip for drafts)
-      if (!draft) {
+      // Validate profile before DB operations
+      if (draft) {
+        _validateProfilePartial(profile);
+      } else {
         _validateProfile(profile);
       }
 
-      final user = Supabase.instance.client.auth.currentUser;
-      if (user == null) {
-        throw UserNotAuthenticatedException(
-          'Cannot upsert profile: user not logged in',
-        );
-      }
-
       final payload = profile.toUpsertJson(user.id);
-      await Supabase.instance.client.from('user_profile').upsert(payload);
+      await Supabase.instance.client.from('user_profile').upsert(
+            payload,
+            onConflict: 'user_id',
+          );
 
       _logger.i('Profile upserted');
     } catch (e, stackTrace) {
@@ -79,7 +85,54 @@ class ProfileService {
     }
   }
 
-  /// Validate user profile fields and ranges.
+  /// Validate profile (partial): enums and ranges only.
+  /// Used for draft saves (incomplete profiles).
+  void _validateProfilePartial(UserProfile profile) {
+    // Validate enum values
+    const validBelts = {'white', 'blue', 'purple', 'brown', 'black'};
+    if (profile.belt != null && !validBelts.contains(profile.belt)) {
+      final msg =
+          'Profile validation failed: invalid belt value "${profile.belt}"';
+      _logger.e(msg);
+      throw ProfileValidationException(msg);
+    }
+
+    const validExpRanges = {'beginner', 'intermediate', 'advanced'};
+    if (profile.expRange != null &&
+        !validExpRanges.contains(profile.expRange)) {
+      final msg =
+          'Profile validation failed: invalid expRange value "${profile.expRange}"';
+      _logger.e(msg);
+      throw ProfileValidationException(msg);
+    }
+
+    const validGoalTypes = {
+      'fundamentals',
+      'technique',
+      'strength',
+      'flexibility'
+    };
+    if (profile.goalType != null &&
+        !validGoalTypes.contains(profile.goalType)) {
+      final msg =
+          'Profile validation failed: invalid goalType value "${profile.goalType}"';
+      _logger.e(msg);
+      throw ProfileValidationException(msg);
+    }
+
+    // Validate ranges
+    if (profile.weeklyGoal != null) {
+      if (profile.weeklyGoal! < 1 || profile.weeklyGoal! > 7) {
+        final msg =
+            'Profile validation failed: weeklyGoal must be between 1 and 7, got ${profile.weeklyGoal}';
+        _logger.e(msg);
+        throw ProfileValidationException(msg);
+      }
+    }
+  }
+
+  /// Validate user profile fields and ranges (full validation).
+  /// Required fields + enums + ranges.
   /// Throws ProfileValidationException on validation failure.
   void _validateProfile(UserProfile profile) {
     // Check required fields
