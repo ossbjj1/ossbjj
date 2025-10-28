@@ -112,6 +112,16 @@ class MockAnalyticsService extends _i1.Mock implements _i5.AnalyticsService {
         ),
         returnValueForMissingStub: null,
       );
+
+  @override
+  _i4.Future<void> optOutAndDisable() => (super.noSuchMethod(
+        Invocation.method(
+          #optOutAndDisable,
+          [],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 }
 
 /// A class which mocks [ConsentService].

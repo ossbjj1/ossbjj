@@ -457,4 +457,14 @@ class MockAnalyticsService extends _i1.Mock implements _i9.AnalyticsService {
         ),
         returnValueForMissingStub: null,
       );
+
+  @override
+  _i6.Future<void> optOutAndDisable() => (super.noSuchMethod(
+        Invocation.method(
+          #optOutAndDisable,
+          [],
+        ),
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 }
