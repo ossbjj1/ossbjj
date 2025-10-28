@@ -61,7 +61,7 @@ function getCorsHeaders(): Record<string, string> {
 }
 
 // Helper: Structured logging with hashed user ID
-async function log(
+function log(
   event: string,
   fields: Json,
   level: "info" | "warn" | "error" = "info",
@@ -124,7 +124,7 @@ serve(async (req) => {
     const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
     if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceRoleKey) {
-      await log(
+      log(
         "server_config_error",
         { reqId, error: "Missing env vars" },
         "error",
@@ -135,7 +135,7 @@ serve(async (req) => {
     // 1. Authenticate user via JWT
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      await log("auth_required", { reqId }, "warn");
+      log("auth_required", { reqId }, "warn");
       return resp({ error: "unauthorized" }, 401, corsHeaders);
     }
 
@@ -146,7 +146,7 @@ serve(async (req) => {
     const { data: { user }, error: authError } = await supabaseClient.auth
       .getUser();
     if (authError || !user) {
-      await log("auth_invalid", { reqId, error: authError?.message }, "warn");
+      log("auth_invalid", { reqId, error: authError?.message }, "warn");
       return resp({ error: "unauthorized" }, 401, corsHeaders);
     }
 
@@ -154,7 +154,7 @@ serve(async (req) => {
 
     // 2. Rate limiting (simple: 2s cooldown per user)
     if (!checkRateLimit(user.id)) {
-      await log("rate_limited", { reqId, userIdHash }, "warn");
+      log("rate_limited", { reqId, userIdHash }, "warn");
       return resp(
         { error: "rate_limited", retryAfter: 2 },
         429,
@@ -167,13 +167,13 @@ serve(async (req) => {
     try {
       body = await req.json();
     } catch (e) {
-      await log("bad_request", { reqId, userIdHash, error: String(e) }, "warn");
+      log("bad_request", { reqId, userIdHash, error: String(e) }, "warn");
       return resp({ error: "bad_request" }, 400, corsHeaders);
     }
 
     const { technique_step_id } = body;
     if (!technique_step_id || typeof technique_step_id !== "string") {
-      await log("bad_request", {
+      log("bad_request", {
         reqId,
         userIdHash,
         reason: "missing_technique_step_id",
@@ -189,7 +189,7 @@ serve(async (req) => {
       .single();
 
     if (stepError || !stepData) {
-      await log("step_not_found", {
+      log("step_not_found", {
         reqId,
         userIdHash,
         technique_step_id,
@@ -211,7 +211,7 @@ serve(async (req) => {
         .single();
 
       if (prevStepError || !prevStepData) {
-        await log("prerequisite_missing", {
+        log("prerequisite_missing", {
           reqId,
           userIdHash,
           technique_step_id,
@@ -233,7 +233,7 @@ serve(async (req) => {
           .maybeSingle();
 
       if (prevProgressError) {
-        await log("progress_check_error", {
+        log("progress_check_error", {
           reqId,
           userIdHash,
           error: prevProgressError.message,
@@ -242,7 +242,7 @@ serve(async (req) => {
       }
 
       if (!prevProgressData) {
-        await log("prerequisite_missing", {
+        log("prerequisite_missing", {
           reqId,
           userIdHash,
           technique_step_id,
@@ -262,7 +262,7 @@ serve(async (req) => {
         .maybeSingle();
 
       if (profileError) {
-        await log("profile_fetch_error", {
+        log("profile_fetch_error", {
           reqId,
           userIdHash,
           error: profileError.message,
@@ -279,7 +279,7 @@ serve(async (req) => {
         new Date(trialEndAt) > new Date();
 
       if (!isPro && !isTrialActive) {
-        await log("payment_required", {
+        log("payment_required", {
           reqId,
           userIdHash,
           technique_step_id,
@@ -300,7 +300,7 @@ serve(async (req) => {
       .rpc("mark_step_complete", { p_technique_step_id: technique_step_id });
 
     if (rpcError) {
-      await log("rpc_error", {
+      log("rpc_error", {
         reqId,
         userIdHash,
         technique_step_id,
@@ -311,7 +311,7 @@ serve(async (req) => {
 
     const result = (rpcData as unknown as CompleteStepResponse[])?.[0];
     if (!result) {
-      await log(
+      log(
         "rpc_no_result",
         { reqId, userIdHash, technique_step_id },
         "error",
@@ -320,7 +320,7 @@ serve(async (req) => {
     }
 
     const durationMs = Date.now() - t0;
-    await log("step_completed", {
+    log("step_completed", {
       reqId,
       userIdHash,
       technique_step_id,
@@ -333,7 +333,7 @@ serve(async (req) => {
     return resp(result, 200, corsHeaders);
   } catch (error) {
     const durationMs = Date.now() - t0;
-    await log("unexpected_error", {
+    log("unexpected_error", {
       reqId,
       error: String(error),
       durationMs,
