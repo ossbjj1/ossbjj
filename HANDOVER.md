@@ -175,28 +175,30 @@ $$;
 ```bash path=null start=null
 brew install deno
 ```
-|2. Env setzen (Service Role sicher):
-|⚠️ **SECURITY NOTE:** Never paste service-role tokens in shell history, shared terminals, or logs.
-|
-|Recommended approach: Use macOS keychain (already stored):
-|```bash path=null start=null
-|export SUPABASE_URL=https://xqgqentkowzxckwlmyqc.supabase.co
-|export SUPABASE_SERVICE_ROLE=$(security find-generic-password -a oss -s oss_supa_service_role -w)
-|```
-|
-|Alternative: Source from .env.local (gitignored):
-|```bash path=null start=null
-|# .env.local (DO NOT COMMIT)
-|export SUPABASE_URL=...
-|export SUPABASE_SERVICE_ROLE=...
-|
-|# In terminal:
-|source .env.local
-|deno run -A server/supabase/scripts/seed_import.ts --apply
-|unset SUPABASE_SERVICE_ROLE  # Clear from shell after use
-|```
-|
-|For CI/Automation: Use environment-loading tools or CI secret stores (GitHub Actions, etc.).
+2. Env setzen (Service Role sicher):
+
+⚠️ **SECURITY NOTE:** Never paste service-role tokens in shell history, shared terminals, or logs.
+
+Recommended approach: Use macOS keychain (already stored):
+```bash path=null start=null
+export SUPABASE_URL=https://xqgqentkowzxckwlmyqc.supabase.co
+export SUPABASE_SERVICE_ROLE=$(security find-generic-password -a oss -s oss_supa_service_role -w)
+```
+
+Alternative: Source from .env.local (gitignored):
+```bash path=null start=null
+# .env.local (DO NOT COMMIT)
+export SUPABASE_URL=...
+export SUPABASE_SERVICE_ROLE=...
+
+# In terminal:
+source .env.local
+deno run -A server/supabase/scripts/seed_import.ts --apply
+unset SUPABASE_SERVICE_ROLE  # Clear from shell after use
+```
+
+For CI/Automation: Use environment-loading tools or CI secret stores (GitHub Actions, etc.).
+
 3. Dry‑Run / Apply:
 ```bash path=null start=null
 deno run -A server/supabase/scripts/seed_import.ts --dry-run

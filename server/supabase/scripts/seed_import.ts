@@ -33,7 +33,6 @@ type Technique = {
   category: string;
   title_en: string;
   title_de: string;
-  skill_level: string;
   display_order: number;
 };
 
@@ -74,8 +73,8 @@ async function main() {
   const isDryRun = args.includes("--dry-run");
   const isApply = args.includes("--apply");
 
-  if (!isDryRun && !isApply) {
-    console.error("Error: Specify --dry-run or --apply");
+  if (isDryRun === isApply) {
+    console.error("Error: Specify exactly one of --dry-run or --apply");
     Deno.exit(1);
   }
 
@@ -146,6 +145,19 @@ async function main() {
   const errors: string[] = [];
   const warnings: string[] = [];
 
+  // Check for duplicate slugs
+  if (slugSet.size !== techniques.length) {
+    const slugCounts = new Map<string, number>();
+    for (const t of techniques) {
+      slugCounts.set(t.slug, (slugCounts.get(t.slug) || 0) + 1);
+    }
+    const duplicates = Array.from(slugCounts.entries())
+      .filter(([_, count]) => count > 1)
+      .map(([slug, count]) => `${slug} (${count} times)`)
+      .join(", ");
+    errors.push(`Duplicate technique slugs detected: ${duplicates}`);
+  }
+
   if (techniques.length !== expectTechniques) {
     const msg = `Expected ${expectTechniques} techniques, got ${techniques.length}`;
     if (enforceCounts) {
@@ -167,6 +179,22 @@ async function main() {
   for (const step of steps) {
     if (!slugSet.has(step.technique_slug)) {
       errors.push(`Step references unknown technique: ${step.technique_slug}`);
+    }
+    // Validate variant
+    if (step.variant !== "gi" && step.variant !== "nogi") {
+      errors.push(
+        `Step has invalid variant '${step.variant}' for technique ${step.technique_slug}. Expected 'gi' or 'nogi'`
+      );
+    }
+    // Validate idx
+    if (
+      !Number.isFinite(step.idx) ||
+      !Number.isInteger(step.idx) ||
+      step.idx < 0
+    ) {
+      errors.push(
+        `Step has invalid idx '${step.idx}' for technique ${step.technique_slug}. Expected non-negative integer`
+      );
     }
   }
 
@@ -191,7 +219,7 @@ async function main() {
 
   console.log("✅ Validation passed");
 
-  // Generate UUIDs
+  // Generate UUIDs and technique rows
   const techniqueRows = await Promise.all(
     techniques.map(async (t) => ({
       id: await generateUUID(NAMESPACE_TECHNIQUE, t.slug),
@@ -261,4 +289,4 @@ async function main() {
   console.log(`  Steps: ${stepRows.length}`);
 }
 
-main();
+await main();
