@@ -63,28 +63,51 @@
 
 **Ziel:** Personalisierung; Basis-Einstellungen vollständig.
 
+**Status:** ✅ Done (PR #7, Issue #8)
+- Onboarding Screen mit Belt/Exp/Goal/Type + Validierung + Upsert
+- Settings: Live-i18n (DE/EN), Audio‑Feedback, Privacy/Legal/Logout
+- Home ContinueCard mit Hint oder Onboarding-CTA
+- Router Redirects (Consent → Onboarding)
+- DB: user_profile + RLS + Constraints
+- i18n: Runtime Strings mit Safe Accessors
+- Services: DI, Persist‑First, Notifiers (Audio/Locale)
+- Tests: Router Redirects, Profile Validation
+- Lint: 0 Issues, Tests Green
+
 **Tasks:**
-1. Onboarding-Form: Belt, Erfahrung, Wochenziel, Zieltyp, optional Altersgruppe
-2. Speichern in `user_profile` (Supabase)
-3. Settings erweitert: Sprache (DE/EN), Consent-Toggle, Audio-Feedback, Logout, "Konto löschen" (UI)
-4. Home: Hero-Karte "Weiter machen"
+1. Onboarding-Form: Belt, Erfahrung, Wochenziel, Zieltyp, optional Altersgruppe ✅
+2. Speichern in `user_profile` (Supabase) ✅
+3. Settings erweitert: Sprache (DE/EN), Consent-Toggle, Audio-Feedback, Logout, "Konto löschen" (UI) ✅
+4. Home: Hero-Karte "Weiter machen" ✅
 
 **DoD:**
-- Onboarding ≤60 s; Antworten werden gespeichert
-- Settings ändert Sprache/Consent live
+- Onboarding ≤60 s (soft goal); Timer starts on first input, countdown badge @45s, autosave @60s ✅
+- Settings ändert Sprache/Consent live; Consent toggles (Analytics/Media) in Settings with server sync ✅
+- Analytics live init/deinit on consent toggle ✅
 
 ---
 
-## Sprint 4 – DB-Schema & Seeds & Lernen-Katalog
+## Sprint 4 – DB-Schema & Seeds & Lernen-Katalog & Consent Sync
 
-**Ziel:** Strukturierter Inhalt, sichtbares Lernen.
+**Ziel:** Strukturierter Inhalt, sichtbares Lernen, User-TZ Streaks, Onboarding-Timer, Consent Live.
 
 **Tasks:**
-1. Supabase Migrations: `user_profile`, `technique`, `technique_step`, `user_step_progress`
-2. `seeds/techniques.json` (20 Techniken) + `seeds/steps.json` (100 Steps) – DE/EN Titel
-3. Learn-Screen (`/learn`): Kategorien-Grid → Technikliste je Kategorie
-4. Home-"Weiter machen": Client-Heuristik (erster nicht erledigter Step)
+1. Supabase Migrations: `user_profile`, `technique`, `technique_step`, `user_step_progress` — ✅ Done
+2. `seeds/techniques.json` (20 Techniken) + `seeds/steps.json` (170 Steps) – DE/EN Titel, Gi/No-Gi variants — ✅ Done
+3. Learn-Screen (`/learn`): Kategorien-Grid → Technikliste je Kategorie — ✅ Done
+4. Home-"Weiter machen": Server-seitige Heuristik via RPC (erster nicht erledigter Step) — ✅ Done
+5. DB: user_profile.timezone + calc_streak_days mit User-TZ + ±30min grace — ✅ Done
+6. Onboarding: Timer (first input), countdown badge @45s, autosave @60s, telemetry — ✅ Done
+7. Settings: Consent Toggles (Analytics/Media) with server sync + live analytics init/deinit — ✅ Done
 
-**DoD:**
-- Kategorien und Techniklisten laden schnell
-- "Weiter machen" zeigt plausiblen nächsten Step
+**DoD (aktueller Status):**
+- Kategorien und Techniklisten laden schnell — ✅ Done
+- "Weiter machen" zeigt plausiblen nächsten Step (serverseitig) — ✅ Done
+- Seeds: 20 Techniken, 170 Steps, keine Orphans — ✅ Done
+- Streak calculation respects user timezone with ±30min grace — ✅ Done
+- Onboarding: ≤60s soft goal with timer + autosave — ✅ Done
+- Settings: Consent toggles live, analytics init/deinit on toggle — ✅ Done
+
+**Carryover / TODO:**
+- Widget tests for Onboarding timer and Settings consent toggles
+- Deno setup for seed_import deployment

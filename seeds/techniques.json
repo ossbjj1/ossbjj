@@ -1,0 +1,162 @@
+[
+  {
+    "slug": "double-leg-takedown",
+    "category": "takedown",
+    "title_en": "Double Leg Takedown",
+    "title_de": "Doppelbein-Takedown",
+    "skill_level": "intermediate",
+    "display_order": 1
+  },
+  {
+    "slug": "osoto-gari",
+    "category": "takedown",
+    "title_en": "Osoto Gari (Outer Reap)",
+    "title_de": "Osoto-Gari (Außensichel)",
+    "skill_level": "beginner",
+    "display_order": 2
+  },
+  {
+    "slug": "side-control-escape",
+    "category": "escape",
+    "title_en": "Side Control Hip Escape",
+    "title_de": "Seitkontrolle befreien (Hip Escape)",
+    "skill_level": "beginner",
+    "display_order": 3
+  },
+  {
+    "slug": "bridge-and-roll-mount",
+    "category": "escape",
+    "title_en": "Mount Escape – Trap and Roll",
+    "title_de": "Mountbefreiung – Upa (Brücke)",
+    "skill_level": "beginner",
+    "display_order": 4
+  },
+  {
+    "slug": "elbow-knee-escape",
+    "category": "escape",
+    "title_en": "Mount Escape – Elbow to Knee",
+    "title_de": "Mountbefreiung – Ellenbogen raus",
+    "skill_level": "beginner",
+    "display_order": 5
+  },
+  {
+    "slug": "headlock-escape",
+    "category": "escape",
+    "title_en": "Headlock Escape (Scarf Hold)",
+    "title_de": "Headlock/Haltergriff Befreiung",
+    "skill_level": "beginner",
+    "display_order": 6
+  },
+  {
+    "slug": "scissor-sweep",
+    "category": "sweep",
+    "title_en": "Scissor Sweep",
+    "title_de": "Scherenschwung-Sweep",
+    "skill_level": "beginner",
+    "display_order": 7
+  },
+  {
+    "slug": "hip-bump-sweep",
+    "category": "sweep",
+    "title_en": "Hip Bump Sweep",
+    "title_de": "Hüftstoß-Sweep",
+    "skill_level": "beginner",
+    "display_order": 8
+  },
+  {
+    "slug": "pendulum-sweep",
+    "category": "sweep",
+    "title_en": "Pendulum (Flower) Sweep",
+    "title_de": "Pendulum-Sweep (Blumenschaukel)",
+    "skill_level": "intermediate",
+    "display_order": 9
+  },
+  {
+    "slug": "stack-pass",
+    "category": "guard_pass",
+    "title_en": "Stack Pass (Double Under)",
+    "title_de": "Stapelpass (Doppel-Untergriff)",
+    "skill_level": "beginner",
+    "display_order": 10
+  },
+  {
+    "slug": "knee-cut-pass",
+    "category": "guard_pass",
+    "title_en": "Knee Cut Pass",
+    "title_de": "Knie-Schlitz-Pass",
+    "skill_level": "beginner",
+    "display_order": 11
+  },
+  {
+    "slug": "toreando-pass",
+    "category": "guard_pass",
+    "title_en": "Bullfighter (Toreando) Pass",
+    "title_de": "Stierkämpfer-Pass (Toreando)",
+    "skill_level": "beginner",
+    "display_order": 12
+  },
+  {
+    "slug": "over-under-pass",
+    "category": "guard_pass",
+    "title_en": "Over-Under Pass",
+    "title_de": "Over-Under-Pass",
+    "skill_level": "intermediate",
+    "display_order": 13
+  },
+  {
+    "slug": "side-to-mount",
+    "category": "transition",
+    "title_en": "Side Control to Mount",
+    "title_de": "Seitkontrolle zu Mount Übergang",
+    "skill_level": "beginner",
+    "display_order": 14
+  },
+  {
+    "slug": "back-take-from-turtle",
+    "category": "transition",
+    "title_en": "Back Take from Turtle",
+    "title_de": "Rückennehmen (aus Turtle)",
+    "skill_level": "intermediate",
+    "display_order": 15
+  },
+  {
+    "slug": "rear-naked-choke",
+    "category": "submission",
+    "title_en": "Rear Naked Choke (Mata Leão)",
+    "title_de": "Würgegriff von hinten",
+    "skill_level": "beginner",
+    "display_order": 16
+  },
+  {
+    "slug": "straight-armbar-mount",
+    "category": "submission",
+    "title_en": "Armbar from Mount",
+    "title_de": "Armstreckhebel (aus der Mount)",
+    "skill_level": "beginner",
+    "display_order": 17
+  },
+  {
+    "slug": "triangle-choke",
+    "category": "submission",
+    "title_en": "Triangle Choke",
+    "title_de": "Triangle Choke (Triangel-Würger)",
+    "skill_level": "intermediate",
+    "display_order": 18
+  },
+  {
+    "slug": "kimura-lock",
+    "category": "submission",
+    "title_en": "Kimura Lock (Double Wristlock)",
+    "title_de": "Kimura-Griff (Schulterhebel)",
+    "skill_level": "intermediate",
+    "display_order": 19
+  },
+  {
+    "slug": "guillotine-choke",
+    "category": "submission",
+    "title_en": "Guillotine Choke",
+    "title_de": "Guillotine-Würger",
+    "skill_level": "intermediate",
+    "display_order": 20
+  }
+]

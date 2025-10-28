@@ -32,6 +32,7 @@ class Strings {
 
   // CTAs
   String get ctaContinue => isDe ? 'Weiter' : 'Continue';
+  String get ctaComplete => isDe ? 'Abschließen' : 'Complete';
   String get ctaSave => isDe ? 'Speichern' : 'Save';
   String get ctaCancel => isDe ? 'Abbrechen' : 'Cancel';
   String get ctaClose => isDe ? 'Schließen' : 'Close';
@@ -92,6 +93,10 @@ class Strings {
   String get onboardingSave => isDe ? 'Profil speichern' : 'Save Profile';
   String get onboardingSuccess =>
       isDe ? 'Profil gespeichert!' : 'Profile saved!';
+  String get onboardingAutosaved =>
+      isDe ? 'Automatisch gespeichert' : 'Autosaved';
+  String onboardingTimeLeft(int seconds) =>
+      isDe ? '$seconds Sek. bis Autosave' : '$seconds sec until autosave';
 
   // Belt options
   String get beltWhite => isDe ? 'Weißgurt' : 'White';
@@ -127,6 +132,10 @@ class Strings {
 
   // Paywall
   String get paywallTitle => isDe ? 'Paywall' : 'Paywall';
+
+  // Step Player
+  String get stepCompleted =>
+      isDe ? 'Schritt abgeschlossen!' : 'Step completed!';
 
   /// Error messages.
   String get errorGeneric =>

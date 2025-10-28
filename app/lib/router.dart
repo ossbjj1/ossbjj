@@ -10,8 +10,10 @@ import 'core/services/profile_service.dart';
 import 'core/services/locale_service.dart';
 import 'core/services/audio_service.dart';
 import 'core/services/progress_service.dart';
+import 'core/services/gating_service.dart';
 import 'features/home/home_screen.dart';
 import 'features/learn/learn_screen.dart';
+import 'features/learn/technique_list_screen.dart';
 import 'features/stats/stats_screen.dart';
 import 'features/settings/settings_screen.dart';
 import 'features/consent/consent_modal.dart';
@@ -22,6 +24,7 @@ import 'features/auth/reset_password_screen.dart';
 import 'features/legal/privacy_screen.dart';
 import 'features/legal/terms_screen.dart';
 import 'features/onboarding/onboarding_screen.dart';
+import 'features/step_player/step_player_screen.dart';
 
 /// Main router configuration for OSS app (Sprint 3).
 ///
@@ -40,6 +43,7 @@ GoRouter createRouter({
   required LocaleService localeService,
   required AudioService audioService,
   required ProgressService progressService,
+  required GatingService gatingService,
 }) {
   // Legal routes exempt from consent redirect (GDPR legal-page access).
   const legalRoutesWhitelist = {
@@ -86,12 +90,22 @@ GoRouter createRouter({
             name: AppRoutes.homeName,
             builder: (context, state) => HomeScreen(
               progressService: progressService,
+              gatingService: gatingService,
             ),
           ),
           GoRoute(
             path: AppRoutes.learnPath,
             name: AppRoutes.learnName,
             builder: (context, state) => const LearnScreen(),
+            routes: [
+              GoRoute(
+                path: 'category/:category',
+                builder: (context, state) {
+                  final category = state.pathParameters['category']!;
+                  return TechniqueListScreen(category: category);
+                },
+              ),
+            ],
           ),
           GoRoute(
             path: AppRoutes.statsPath,
@@ -105,6 +119,8 @@ GoRouter createRouter({
               authService: authService,
               localeService: localeService,
               audioService: audioService,
+              consentService: consentService,
+              analyticsService: analyticsService,
             ),
           ),
         ],
@@ -165,18 +181,25 @@ GoRouter createRouter({
           title: 'Technique (Sprint 5)',
         ),
       ),
+      // Sprint 4: Step Player MVP
       GoRoute(
-        path: AppRoutes.stepPath,
+        path: '${AppRoutes.stepPath}/:stepId',
         name: AppRoutes.stepName,
-        builder: (context, state) => const _PlaceholderScreen(
-          title: 'Step Player (Sprint 5)',
-        ),
+        builder: (context, state) {
+          final stepId = state.pathParameters['stepId']!;
+          return StepPlayerScreen(
+            stepId: stepId,
+            gatingService: gatingService,
+          );
+        },
       ),
       GoRoute(
         path: AppRoutes.onboardingPath,
         name: AppRoutes.onboardingName,
         builder: (context, state) => OnboardingScreen(
           profileService: profileService,
+          analyticsService: analyticsService,
+          consentService: consentService,
         ),
       ),
     ],

@@ -1,0 +1,221 @@
+import 'package:logger/logger.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+/// Step gating service (Sprint 4 MVP).
+/// Checks access & completes steps.
+/// MVP: Client-side logic; Edge Fn migration planned.
+class GatingService {
+  GatingService({
+    SupabaseClient? client,
+    Logger? logger,
+  })  : _client = client ?? Supabase.instance.client,
+        _logger = logger ?? Logger();
+
+  final SupabaseClient _client;
+  final Logger _logger;
+
+  /// Check if user can access step (server-authoritative).
+  /// Sprint 4.1: Calls Edge Function for secure, server-side entitlement validation.
+  /// Cannot be bypassed via app binary manipulation.
+  Future<GatingAccess> checkStepAccess(String techniqueStepId) async {
+    try {
+      final response = await _client.functions.invoke(
+        'gating_check_step_access',
+        body: {'techniqueStepId': techniqueStepId},
+      );
+
+      if (response.status == 401) {
+        return const GatingAccess(
+            allowed: false, reason: GatingReason.authRequired);
+      }
+
+      if (response.status != 200) {
+        throw Exception(
+            'Edge Function failed: ${response.status} ${response.data}');
+      }
+
+      final raw = response.data;
+      if (raw is! Map) {
+        _logger.w('Malformed gating response: non-map payload');
+        return const GatingAccess(
+            allowed: false, reason: GatingReason.authRequired);
+      }
+      final data = Map<String, dynamic>.from(raw);
+
+      final allowedVal = data['allowed'];
+      final reasonVal = data['reason'];
+
+      final bool allowed = allowedVal is bool ? allowedVal : false;
+      final String reasonStr = reasonVal is String ? reasonVal : 'authRequired';
+
+      final reason = _parseGatingReason(reasonStr);
+      return GatingAccess(allowed: allowed, reason: reason);
+    } catch (e, stackTrace) {
+      _logger.e('checkStepAccess failed', error: e, stackTrace: stackTrace);
+      rethrow;
+    }
+  }
+
+  /// Parse gating reason string from Edge Function response.
+  GatingReason _parseGatingReason(String reasonStr) {
+    switch (reasonStr) {
+      case 'free':
+        return GatingReason.free;
+      case 'premium':
+        return GatingReason.premium;
+      case 'premiumRequired':
+        return GatingReason.premiumRequired;
+      case 'authRequired':
+        return GatingReason.authRequired;
+      default:
+        _logger
+            .w('Unknown gating reason: $reasonStr, defaulting to authRequired');
+        return GatingReason.authRequired;
+    }
+  }
+
+  /// Complete step (idempotent).
+  /// Sprint 4.1+: Server-authoritative completion via Edge Function.
+  /// Edge Function enforces auth, prerequisite, gating, then completes securely on the server.
+  /// Returns {success, idempotent, message} or throws domain error.
+  Future<CompleteResult> completeStep(String techniqueStepId) async {
+    final user = _client.auth.currentUser;
+    if (user == null) {
+      throw const GatingException(
+        type: GatingErrorType.unauthorized,
+        message: 'User not logged in',
+      );
+    }
+
+    try {
+      // Call Edge Function gating_step_complete
+      final response = await _client.functions.invoke(
+        'gating_step_complete',
+        body: {'technique_step_id': techniqueStepId},
+      );
+
+      // Handle error responses
+      if (response.status == 401) {
+        throw const GatingException(
+          type: GatingErrorType.unauthorized,
+          message: 'Authentication required',
+        );
+      }
+
+      if (response.status == 402) {
+        throw const GatingException(
+          type: GatingErrorType.paymentRequired,
+          message: 'Premium subscription required',
+        );
+      }
+
+      if (response.status == 409) {
+        throw const GatingException(
+          type: GatingErrorType.prerequisiteMissing,
+          message: 'Complete previous step first',
+        );
+      }
+
+      if (response.status == 429) {
+        final retryAfter = response.data?['retryAfter'] as int? ?? 2;
+        throw GatingException(
+          type: GatingErrorType.rateLimited,
+          message: 'Rate limited, retry after ${retryAfter}s',
+        );
+      }
+
+      if (response.status != 200) {
+        throw GatingException(
+          type: GatingErrorType.serverError,
+          message: 'Server error: ${response.status}',
+        );
+      }
+
+      // Parse success response
+      final raw = response.data;
+      if (raw is! Map) {
+        throw const GatingException(
+          type: GatingErrorType.serverError,
+          message: 'Malformed response',
+        );
+      }
+      final data = Map<String, dynamic>.from(raw);
+
+      final success = data['success'] as bool? ?? false;
+      final idempotent = data['idempotent'] as bool? ?? false;
+      final message = data['message'] as String? ?? 'unknown';
+
+      _logger.i(
+          'Step completed: $techniqueStepId (success: $success, idempotent: $idempotent)');
+
+      return CompleteResult(
+        success: success,
+        idempotent: idempotent,
+        message: message,
+      );
+    } on GatingException {
+      rethrow;
+    } catch (e, stackTrace) {
+      _logger.e('completeStep failed', error: e, stackTrace: stackTrace);
+      throw GatingException(
+        type: GatingErrorType.serverError,
+        message: 'Unexpected error: $e',
+      );
+    }
+  }
+}
+
+/// Gating access result.
+class GatingAccess {
+  const GatingAccess({
+    required this.allowed,
+    required this.reason,
+  });
+
+  final bool allowed;
+  final GatingReason reason;
+}
+
+/// Gating reason enum.
+enum GatingReason {
+  free,
+  premium,
+  premiumRequired,
+  authRequired,
+}
+
+/// Complete step result.
+class CompleteResult {
+  const CompleteResult({
+    required this.success,
+    required this.idempotent,
+    required this.message,
+  });
+
+  final bool success;
+  final bool idempotent; // True if already completed
+  final String message;
+}
+
+/// Gating error types.
+enum GatingErrorType {
+  unauthorized,
+  paymentRequired,
+  prerequisiteMissing,
+  rateLimited,
+  serverError,
+}
+
+/// Gating exception (domain error).
+class GatingException implements Exception {
+  const GatingException({
+    required this.type,
+    required this.message,
+  });
+
+  final GatingErrorType type;
+  final String message;
+
+  @override
+  String toString() => 'GatingException($type): $message';
+}

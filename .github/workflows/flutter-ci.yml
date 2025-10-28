@@ -62,7 +62,7 @@ jobs:
         with:
           filters: |
             migrations:
-              - 'server/supabase/migrations/**'
+              - 'supabase/migrations/**'
             privacy_docs:
               - 'docs/privacy/reviews/**'
 
@@ -71,3 +71,13 @@ jobs:
         run: |
           echo "::error::Supabase-Migrationen geändert – bitte docs/privacy/reviews/<sprint-id>.md aktualisieren (WARP.md Acceptance-Regel)."
           exit 1
+
+      - name: Enforce SSOT for migrations (no SQL under server/supabase/migrations)
+        run: |
+          if [ -d server/supabase/migrations ] && find server/supabase/migrations -type f -name '*.sql' 2>/dev/null | grep -q .; then
+            echo "::error::Migrations dürfen nur unter supabase/migrations/ liegen. Bitte Dateien aus server/supabase/migrations/ entfernen/verschieben."
+            find server/supabase/migrations -type f -name '*.sql' || true
+            exit 1
+          else
+            echo "✅ SSOT ok: Keine SQL-Migrationen unter server/supabase/migrations/."
+          fi

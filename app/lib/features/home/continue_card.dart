@@ -5,37 +5,41 @@ import '../../core/design_tokens/spacing.dart';
 import '../../core/design_tokens/typography.dart';
 import '../../core/l10n/strings.dart';
 import '../../core/navigation/routes.dart';
-import '../../core/services/progress_service.dart';
+import '../../core/services/progress_service.dart'
+    show ProgressService, NextStepResult;
+import '../../core/services/gating_service.dart';
 
-/// Continue card for Home screen (Sprint 3 MVP).
+/// Continue card for Home screen (Sprint 3 MVP + Sprint 4).
 class ContinueCard extends StatefulWidget {
   const ContinueCard({
     super.key,
     required this.progressService,
+    required this.gatingService,
   });
 
   final ProgressService progressService;
+  final GatingService gatingService;
 
   @override
   State<ContinueCard> createState() => _ContinueCardState();
 }
 
 class _ContinueCardState extends State<ContinueCard> {
-  late Future<ContinueHint?> _lastHintFuture;
+  late Future<NextStepResult?> _nextStepFuture;
 
   @override
   void initState() {
     super.initState();
     // Cache the future once to avoid recreating on every rebuild
-    _lastHintFuture = widget.progressService.loadLast();
+    _nextStepFuture = widget.progressService.getNextStep();
   }
 
   @override
   Widget build(BuildContext context) {
     final t = StringsScope.of(context);
 
-    return FutureBuilder<ContinueHint?>(
-      future: _lastHintFuture,
+    return FutureBuilder<NextStepResult?>(
+      future: _nextStepFuture,
       builder: (context, snapshot) {
         // Handle error state
         if (snapshot.hasError) {
@@ -65,6 +69,7 @@ class _ContinueCardState extends State<ContinueCard> {
               height: 120,
               child: Center(
                 child: CircularProgressIndicator(
+                  key: const Key('continue_card_loading'),
                   valueColor: AlwaysStoppedAnimation<Color>(
                     Theme.of(context).colorScheme.primary,
                   ),
@@ -74,7 +79,8 @@ class _ContinueCardState extends State<ContinueCard> {
           );
         }
 
-        final hint = snapshot.data;
+        final nextStep = snapshot.data;
+        final locale = Localizations.localeOf(context).languageCode;
 
         return Card(
           color: DsColors.bgSurface,
@@ -91,9 +97,9 @@ class _ContinueCardState extends State<ContinueCard> {
                   ),
                 ),
                 const SizedBox(height: DsSpacing.md),
-                if (hint != null)
+                if (nextStep != null)
                   Text(
-                    hint.title,
+                    locale == 'de' ? nextStep.titleDe : nextStep.titleEn,
                     style: DsTypography.bodyMedium.copyWith(
                       color: DsColors.textSecondary,
                     ),
@@ -107,20 +113,18 @@ class _ContinueCardState extends State<ContinueCard> {
                   ),
                 const SizedBox(height: DsSpacing.lg),
                 ElevatedButton(
-                  onPressed: () {
-                    if (hint != null) {
-                      // Future: navigate to step player with hint.stepId
-                      context.go(AppRoutes.learnPath);
-                    } else {
-                      context.go(AppRoutes.onboardingPath);
-                    }
-                  },
+                  key: nextStep != null
+                      ? const Key('continue_card_continue_button')
+                      : const Key('continue_card_onboarding_button'),
+                  onPressed: nextStep != null
+                      ? () => _handleContinue(nextStep)
+                      : () => context.go(AppRoutes.onboardingPath),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Theme.of(context).colorScheme.onPrimary,
                   ),
                   child: Text(
-                    hint != null ? t.ctaContinue : t.onboardingSave,
+                    nextStep != null ? t.ctaContinue : t.onboardingSave,
                   ),
                 ),
               ],
@@ -129,5 +133,38 @@ class _ContinueCardState extends State<ContinueCard> {
         );
       },
     );
+  }
+
+  /// Handle continue button press (Sprint 4: server-side gating for all steps).
+  /// Uses State's context property to avoid use_build_context_synchronously warnings.
+  Future<void> _handleContinue(NextStepResult nextStep) async {
+    try {
+      // Server-side gating check for all steps (no client-side threshold)
+      final access =
+          await widget.gatingService.checkStepAccess(nextStep.stepId);
+
+      if (!mounted) return;
+
+      if (!access.allowed) {
+        // Navigate to paywall
+        context.go(AppRoutes.paywallPath);
+        return;
+      }
+
+      if (!mounted) return;
+
+      // Navigate to step player
+      context.go('/step/${nextStep.stepId}');
+    } catch (e) {
+      if (!mounted) return;
+      final t = StringsScope.of(context);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(t.errorGeneric), // Gating access check failed
+          backgroundColor: DsColors.stateError,
+        ),
+      );
+    }
   }
 }

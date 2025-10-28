@@ -60,5 +60,16 @@ void main() {
       expect(state.media, false);
       expect(state.shown, true);
     });
+
+    // TODO Sprint 4.1: Add tests for server sync methods with Supabase mock
+    // Requires complex mock chain:
+    // - SupabaseClient → from('user_profile') → select() → eq() → maybeSingle()
+    // - SupabaseClient → rpc('ensure_user_profile')
+    // Tests to add:
+    // - syncAnalyticsFromServer() happy path (server true → local true)
+    // - syncAnalyticsFromServer() server false → local false
+    // - syncAnalyticsFromServer() network error → fallback to local
+    // - setServerAnalytics() UPDATE + local mirror
+    // For MVP: Annotate with @GenerateMocks and implement in Sprint 4.1
   });
 }

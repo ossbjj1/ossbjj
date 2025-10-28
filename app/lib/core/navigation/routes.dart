@@ -49,7 +49,7 @@ class AppRoutes {
   static const String techniquePath = '/technique/:id';
   static const String techniqueName = 'technique';
 
-  static const String stepPath = '/step/:id';
+  static const String stepPath = '/step';
   static const String stepName = 'step';
 
   /// Routes where bottom nav should be hidden.
