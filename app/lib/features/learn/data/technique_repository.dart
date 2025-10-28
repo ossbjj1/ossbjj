@@ -61,8 +61,8 @@ class TechniqueRepository {
       }
 
       return response
-          .where((row) => row is Map<String, dynamic>)
-          .map((row) => TechniqueDto.fromJson(row as Map<String, dynamic>))
+          .whereType<Map<String, dynamic>>()
+          .map((row) => TechniqueDto.fromJson(row))
           .toList();
     } on TimeoutException catch (e) {
       throw TechniqueLoadFailure('fetchByCategory($category)', e);
@@ -89,8 +89,8 @@ class TechniqueRepository {
       }
 
       return response
-          .where((row) => row is Map<String, dynamic>)
-          .map((row) => TechniqueStepDto.fromJson(row as Map<String, dynamic>))
+          .whereType<Map<String, dynamic>>()
+          .map((row) => TechniqueStepDto.fromJson(row))
           .toList();
     } on TimeoutException catch (e) {
       throw TechniqueLoadFailure('fetchSteps($techniqueId)', e);
